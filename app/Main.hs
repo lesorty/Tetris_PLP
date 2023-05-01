@@ -1,15 +1,16 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
+
 module Main where
 
+import DrawGrid
 import Graphics.Gloss
 
-window :: Display
-window = InWindow "Nice Window" (200, 200) (10, 10)
-
-background :: Color
-background = white
-
-drawing :: Picture
-drawing = circle 80
-
+-- Configurações básicas para inicializar a tela do jogo
 main :: IO ()
-main = display window background drawing
+main = play window black fps initialState drawScene updateState pure'
+  where
+    window = InWindow "Tetris De Iraponildo" (900, 900) (100, 100)
+    fps = 60
+    initialState = State (1, 1)
+    pure' _ s = s
