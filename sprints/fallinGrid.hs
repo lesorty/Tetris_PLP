@@ -16,9 +16,13 @@ canFallDownBlock matrix (x:xs) =
     if canFallDown matrix (fst x, snd x) then  canFallDownBlock matrix xs
     else False
 
+fallBlock :: [[Int]] -> [(Int,Int)] -> [(Int,Int)]
+fallBlock matrix [x] = [((fst x + 1), snd x)]
+fallBlock matrix (x:xs) = ((fst x + 1), snd x) : fallBlock matrix xs
+
 -- Example 2D array
 matrix :: [[Int]]
-matrix = [[1,1,1,0],[0,0,0,0],[0,0,0,0],[2,2,2,2]]
+matrix = [[1,1,1,0],[0,1,0,0],[0,0,0,0],[2,2,2,2]]
 
 indices :: [(Int, Int)]
 indices = reverse (findIndices 1 matrix)
