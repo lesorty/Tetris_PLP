@@ -1,6 +1,6 @@
--- let grid = variavel
+-- let grid = variave
 -- int 1 = moveLeft. int 2 = moveRight. int 3 = desce. int 4 = rotate. int 5 = fullFall.
-actionLoop :: [[Int]] -> Int -> [[Int]]
+actionLoop :: [[Square]] -> Int -> [[Square]]
 -- actionloop grid input =
 --  showGrid grid
 --  if isGameOver
@@ -30,7 +30,7 @@ actionLoop :: [[Int]] -> Int -> [[Int]]
 
 
 -- quando a peça cai no chão, chama tudo relevante
-goToNextCycle :: [[Int]] -> [[Int]]
+goToNextCycle :: [[Square]] -> [[Square]]
 -- groundBlocks
 -- clearMatrix
 -- putRandomTetromino

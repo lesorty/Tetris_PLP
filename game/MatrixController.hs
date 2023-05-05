@@ -56,7 +56,7 @@ clearTheseLines :: [[Square]] -> [Int] -> [[Square]]
 
 -- S
 -- pega uma matriz e retorna ela com todas as linhas clearáveis clearadas
-clearMatrix :: [[Square]] -> ([[Int]], Int)
+clearMatrix :: [[Square]] -> ([[Square]], Int)
 -- clearMatrix grid = 
     -- x = clearableLines grid
     -- clearedMatrix = clearTheseLines grid x
