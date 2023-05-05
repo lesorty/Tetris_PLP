@@ -1,38 +1,50 @@
 
-findIndices :: Int -> [[Int]] -> [(Int, Int)]
+-- pronta
+findIndexes :: Int -> [[Int]] -> [(Int, Int)]
 
+-- pronta
 canFall :: [[Int]] -> Bool
 
-canFallTetromino :: [[Int]] -> [(Int,Int)] -> Bool
+-- pega a grid, o conjunto de coordenadas ativas e uma direção. retorna se elas podem ir pra uma direçao
+canMoveTetromino :: [[Int]] -> [(Int,Int)] -> Int -> Bool
 
+-- pronta
 fallTetromino :: [[Int]] -> [(Int,Int)] -> [[Int]]
 
+-- S
 -- Pega uma matriz e retorna a lista de linhas que podem ser limpas
 clearableLines :: [[Int]] -> [Int]
 -- usa canClearLine
 
+--S
 -- pega uma matriz e um índice. retorna se essa linha é clearável ou não
 canClearLine :: [[Int]] -> Int -> Bool
 
+--S
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
 clearTheseLines :: [[Int]] -> [Int] -> [[Int]]
 
+-- S
 -- pega uma matriz e retorna ela com todas as linhas clearáveis clearadas
-clearMatrix :: [[Int]] -> [[Int]]
+clearMatrix :: [[Int]] -> ([[Int]], Int)
 -- clearMatrix grid = 
     -- x = clearableLines grid
     -- clearedMatrix = clearTheseLines grid x
     -- return clearedMatrix 
 
+-- L
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
 rotate :: [[Int]] -> [[Int]]
 
+-- L
 --pega as coordenadas de cada bloco de um tetromino. retorna as coordenadas finais que cada bloco deve ter.
 getRotationEndPositions :: [(Int,Int)] -> [(Int,Int)]
 
+-- E
 --retorna se um conjunto de blocos pode ser colocado na grid.
 canBePut :: [[Int]] -> [(Int, Int)] -> Bool
 
+-- 
 --retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
 canBePutWithSideMove :: [[Int]] -> [(Int, Int)] -> Int
 
@@ -44,6 +56,10 @@ isGameOver :: [[Int]] -> Bool
 
 --usa magia de Gloss para exibir a grid na tela
 showGrid :: [[Int]] -> ????
+
+[0,0,1],[0,2,0]
+001
+020
 
 showGameOver :: ????
 
@@ -70,41 +86,3 @@ getRandomTetromino :: ([(Int, Int)], Int)
 
 -- bota um tetromino aleatório na grid.
 putRandomTetromino :: [[Int]] -> [[Int]]
-
--- quando a peça cai no chão, chama tudo relevante
-goToNextCycle :: [[Int]] -> [[Int]]
--- groundBlocks
--- clearMatrix
--- putRandomTetromino
-
-
--- let grid = variavel
--- int 1 = moveLeft. int 2 = moveRight. int 3 = desce. int 4 = rotate. int 5 = fullFall.
-actionLoop :: [[Int]] -> Int -> [[Int]]
--- actionloop grid input =
---  showGrid grid
---  if isGameOver
---     showGameOver
---  if input == 1:
---      if canMove 1:
---          return moveActiveBlocks 1
---     else
---            return grid
---  if input == 2:
---      if canMove 2:
---          return moveActiveBlocks 2
---     else
---            return grid
---  if input == 3:
---      if canFall:
---          moveActiveBlocks 3
---      else        
---          goToNextCycle
---  if input == 4
---      rotate
---  if input == 5
---      fullFall
---      
-
-
-
