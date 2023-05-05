@@ -1,0 +1,10 @@
+// Workspace settings
+{
+    // The following will hide the .exe and .hi and .o files
+    "files.exclude": {
+        "**/*.exe": true,
+        "**/*.hi": true,
+        "**/*.o": true
+    }
+
+}
