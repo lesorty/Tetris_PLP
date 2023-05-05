@@ -1,15 +1,36 @@
+data Color = Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data Piece = None | LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
+data Falling = Enable | Disable deriving Eq
+
 
 -- pronta
 findIndexes :: Int -> [[Int]] -> [(Int, Int)]
+findIndexes s matrix = do
+-- iterate by the rows and columns to get the i and j of the elements
+  (i, row) <- zip [0..] matrix
+  (j, elem) <- zip [0..] row
+  if elem == s then return (i, j) else []
 
--- pronta
-canFall :: [[Int]] -> Bool
+-- FALTA MODULARIZAR PARA OS LADOS
+canMove :: [[Int]] -> Bool
+canMove matrix coordinate = if bellow == 2 then False else True
+    where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
 
+-- PARA CONSULTA
+--canFallDownBlock :: [[Int]] -> [(Int,Int)] -> Bool
+--canFallDownBlock matrix [x] =  canFallDown matrix (fst x, snd x)
+--canFallDownBlock matrix (x:xs) =
+--    if canFallDown matrix (fst x, snd x) then  canFallDownBlock matrix xs
+--    else False
 -- pega a grid, o conjunto de coordenadas ativas e uma direção. retorna se elas podem ir pra uma direçao
 canMoveTetromino :: [[Int]] -> [(Int,Int)] -> Int -> Bool
 
+
 -- pronta
 fallTetromino :: [[Int]] -> [(Int,Int)] -> [[Int]]
+fallTetromino :: [[Int]] -> [(Int,Int)] -> [(Int,Int)]
+fallTetromino matrix [x] = [((fst x + 1), snd x)]
+fallTetromino matrix (x:xs) = ((fst x + 1), snd x) : fallTetromino matrix xs
 
 -- S
 -- Pega uma matriz e retorna a lista de linhas que podem ser limpas
