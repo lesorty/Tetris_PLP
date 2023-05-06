@@ -39,9 +39,7 @@ canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable
 canMoveTetromino :: [[Square]] -> Move -> Bool
 canMoveTetromino matrix move = canBePut matrix (GetPosMove matrix move)
 
--- S
---retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
-canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+
 
 
 ------------ PIECE MOVEMENT LOGIC ------------
@@ -89,7 +87,7 @@ moveTetromino matrix move = changeActiveBlocksPos matrix endPos
     where endPos = getEndPos matrix move
 
 
--- S
+-- TO TEST
 fullFall :: [[Square]] -> [[Square]]
 fullFall matrix = 
     if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
@@ -142,6 +140,13 @@ putRandomTetromino :: [[Square]] -> [[Square]]
 
 
 ------------ PIECE ROTATION LOGIC ------------
+
+-- TO TEST
+canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+canBePutWithSideMove matrix positions
+    | canBePut matrix (map (\k -> ((fst k) - 1, snd k)) positions) = 1
+    | canBePut matrix (map (\k -> ((fst k) + 1, snd k)) positions) = 2
+    | otherwise = 0
 
 -- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
