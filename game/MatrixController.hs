@@ -1,6 +1,6 @@
 module MatrixController where
   
-data Move = Left | Right | Rotate | Down | SuperDown
+data Move = Left | Right | Rotate | Down | SuperDown deriving Eq
 data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
@@ -70,9 +70,9 @@ addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
 -- TO TEST
 getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
-  | move == Left = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
-  | move == Right = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == Down = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == (Move Left) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == (Move Right) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == (Move Down) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -91,6 +91,9 @@ moveTetromino matrix move = changeActiveBlocksPos matrix endPos
 
 -- S
 fullFall :: [[Square]] -> [[Square]]
+fullFall matrix = 
+    if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
+    else matrix
 
 -- L
 -- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
@@ -116,6 +119,8 @@ canClearLine line = all (\k -> getActive k == Disable) line
 clearMatrix :: [[Square]] -> ([[Square]], Int)
 clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remainderLines) emptyLine), (25 - length remainderLines))
     where remainderLines = filter (\k -> canClearLine k) matrix
+
+
 
 
 ------------ GAME LOGIC ------------
