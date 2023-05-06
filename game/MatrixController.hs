@@ -4,7 +4,13 @@ data Move = Left | Right | Rotate | Down | SuperDown
 data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
-data Square = (Color,Active) deriving Eq
+data Square = Square Color Falling deriving Eq
+
+getColor :: Square -> Color
+getColor (Square color _) = color
+
+getActive :: Square -> Active
+getActive (Square _ active) = active
 
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
@@ -14,23 +20,21 @@ findActiveIndexes s matrix = do
   (j, elem) <- zip [0..] row
   if elem == Enable then return (i, j) else []
 
+-- TO TEST
 getPosMove :: [[Square]] -> Move -> [(Int, Int)]
 getPosMove matrix move 
   | move == Left = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes grid)
   | move == Right = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes grid)
   | move == Down = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes grid)
 
+
+--retorna se um conjunto de blocos pode ser colocado na matrix.
+canBePut :: [[Square]] -> [(Int, Int)] -> Bool
+canBePut matrix [] = true
+canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable then False else canBePut matrix ts
+
 -- TO TEST
---recebe uma matrix e uma direção (esq, baixo, dir). retorna se o bloco de uma coordenada pode se mover nessa direçao
-canMove :: [[Square]] -> (Int, Int) -> Move -> Bool
-canMove matrix coordinate move = if (snd posMove) == Disable then False else True
-    where posMove =
-        if move == Left then matrix !! (fst coordinate) !! ((snd coordinate) - 1)
-        else if move == Right then matrix !! (fst coordinate) !! ((snd coordinate) + 1)
-        else if move == Down then matrix !! ((fst coordinate) + 1) !! (snd coordinate)
- 
--- TO TEST
-canMoveTetromino :: [[Square]] -> Move -> Boll
+canMoveTetromino :: [[Square]] -> Move -> Bool
 canMoveTetromino matrix move = length (filter (==False) (map (\k -> canMove matrix k move) findActiveIndexes)) == 0
 
 
@@ -52,7 +56,7 @@ removeActiveBlocks (x:xs) =
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
 addBlocks matrix square [] = [] 
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
-    where updatedMatrix = updateMatrixElement matrix ( fst x, snd x) square
+    where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
 
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -61,21 +65,9 @@ changeActiveBlocksPos matrix move =
 
 -- matrix. 
 moveTetromino :: [[Square]] -> Move -> [[Square]]
-moveTetromino matrix [x] move = moveBlock matrix (fst x, snd x) move 
-moveTetromino matrix (x:xs) move =posMove : moveTetromino matrix xs move
-    where posMove =
-        if move == Left then ((fst x + 1), snd x)
-        else if move == Right then (fst x, (snd x + 1))
-        else if move == Down then matrix !! ((fst x + 1), snd x)
 
--- moveTetromino
--- changeActiveBlocksPos indixes auxMatrix
--- where
---     indixes = findActiveIndexes
---     auxMatrix = removeActiveBlocks matrix
 
--- TO TEST
--- Pega uma matriz e retorna a lista de linhas que podem ser limpas
+-- retorna uma lista com os indices das linahs clearaveis
 clearableLines :: [[Square]] -> [Int]
 clearableLines matrix = [i | (row, i) <- zip matrix [0..], canClearLine matrix i]
 
@@ -101,13 +93,6 @@ clearMatrix :: [[Square]] -> ([[Square]], Int)
     -- clearedMatrix = clearTheseLines matrix x
     -- return clearedMatrix 
 
-
-getColor :: Square -> Color
-getColor (Square color _) = color
-
--- S
---retorna se um conjunto de blocos pode ser colocado na matrix.
-canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 -- S
 --retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
 canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
