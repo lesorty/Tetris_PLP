@@ -1,36 +1,14 @@
--- let grid = variavel
--- int 1 = moveLeft. int 2 = moveRight. int 3 = desce. int 4 = rotate. int 5 = fullFall.
-actionLoop :: [[Int]] -> Int -> [[Int]]
--- actionloop grid input =
---  showGrid grid
---  if isGameOver
---     showGameOver
---  if input == 1:
---      if canMove 1:
---          return moveActiveBlocks 1
---     else
---            return grid
---  if input == 2:
---      if canMove 2:
---          return moveActiveBlocks 2
---     else
---            return grid
---  if input == 3:
---      if canFall:
---          moveActiveBlocks 3
---      else        
---          goToNextCycle
---  if input == 4
---      rotate
---  if input == 5
---      fullFall
---      
+import Screen
+import MatrixController
 
--- a descida automatica fica aqui tbm
+actionLoop :: [[Square]] -> Int -> [[Square]]
+actionLoop grid input 
+    | isGameOver grid = showGameOver
+    | input == 1 = if canMove grid 1 then moveActiveBlocks grid 1 else grid
+    | input == 2 = if canMove grid 2 then moveActiveBlocks grid 2 else grid
+    | input == 3 = if canMove grid 3 then moveActiveBlocks grid 3 else goToNextCycle grid
+    | input == 4 = rotate grid
+    | input == 5 = fullFall grid
 
-
--- quando a peça cai no chão, chama tudo relevante
-goToNextCycle :: [[Int]] -> [[Int]]
--- groundBlocks
--- clearMatrix
--- putRandomTetromino
+goToNextCycle :: [[Square]] -> [[Square]]
+goToNextCycle grid = putRandomTetromino . clearMatrix . groundBlocks grid
