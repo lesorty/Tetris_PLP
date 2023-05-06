@@ -1,26 +1,6 @@
 module MatrixController where
   
 data Move = Left | Right | Rotate | Down | SuperDown
-data Color = Empty | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
-data Piece = None | LeftL | RightL | TwoByTwo | Rectangule | LeftS | RigthS | T deriving Eq
-data Falling = Enable | Disable deriving Eq
-data Square = Square Color Falling deriving Eq
-
--- L: Essa função está bugada
-findIndexes :: Int -> [[Square]] -> [(Int, Int)]
-findIndexes s matrix = do
--- iterate by the rows and columns to get the i and j of the elements
-  (i, row) <- zip [0..] matrix
-  (j, elem) <- zip [0..] row
-  if elem == s then return (i, j) else []
-
--- -- FALTA MODULARIZAR PARA OS LADOS
--- A DISCUTIR
--- canMove :: [[Square]] -> Bool
--- canMove matrix coordinate = if bellow == 2 then False else True
---     where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
-
-data Move = Left | Right | Rotate | Down | SuperDown
 data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
@@ -97,7 +77,7 @@ canClearLine :: [[Square]] -> Int -> Bool
 canClearLine matrix rowIndex = allDisable (matrix !! rowIndex)
     where allDisable xs = all (==Disable) xs
 
--- TODO
+--S
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
 clearTheseLines :: [[Square]] -> [Int] -> [[Square]]
 clearTheseLines matrix lines =
