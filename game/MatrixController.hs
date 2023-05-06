@@ -1,49 +1,51 @@
 data Move = Left | Right | Rotate | Down | SuperDown
 data Color = Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
-data Piece = None | LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
-data Falling = Enable | Disable deriving Eq
-data Square = (Color,Falling) deriving Eq
+data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
+data Active = Enable | Disable | None deriving Eq
+data Square = (Color,Active) deriving Eq
 
--- pronta
-findIndexes :: Int -> [[Square]] -> [(Int, Int)]
-findIndexes s matrix = do
+-- TO TEST
+findActiveIndexes :: [[Square]] -> [(Int, Int)]
+findActiveIndexes s matrix = do
 -- iterate by the rows and columns to get the i and j of the elements
   (i, row) <- zip [0..] matrix
   (j, elem) <- zip [0..] row
-  if elem == s then return (i, j) else []
+  if elem == Enable then return (i, j) else []
 
--- -- FALTA MODULARIZAR PARA OS LADOS
--- A DISCUTIR
--- canMove :: [[Square]] -> Bool
--- canMove matrix coordinate = if bellow == 2 then False else True
---     where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
 
+-- TO TEST
 --recebe uma grid e uma direção (esq, baixo, dir). retorna se os blocos ativos podem se mover nessa direçao
-canMove :: [[Square]] -> Move -> Bool
+canMove :: [[Square]] -> (Int, Int) -> Move -> Bool
+canMove matrix coordinate move = if posMove == Disable then False else True
+    where posMove =
+        if move == Left then matrix !! (fst coordinate) !! ((snd coordinate) - 1)
+        else if move == Right then matrix !! (fst coordinate) !! ((snd coordinate) + 1)
+        else if move == Down then matrix !! ((fst coordinate) + 1) !! (snd coordinate)
 
--- PARA CONSULTA
---canFallDownBlock :: [[Int]] -> [(Int,Int)] -> Bool
---canFallDownBlock matrix [x] =  canFallDown matrix (fst x, snd x)
---canFallDownBlock matrix (x:xs) =
---    if canFallDown matrix (fst x, snd x) then  canFallDownBlock matrix xs
---    else False
+
+-- TO TEST
 -- pega a grid, o conjunto de coordenadas ativas e uma direção. retorna se elas podem ir pra uma direçao
-canMoveTetromino :: [[Square]] -> [(Int,Int)] -> Int -> Bool
+canMoveTetromino :: [[Square]] -> [(Int,Int)] -> Move -> Bool
+canMoveTetromino matrix [x] move = canMove matrix (fst x, snd x) move
+canMoveTetromino matrix (x:xs) move = 
+    if canMove matrix (fst x, snd x) move then canMoveTetromino matrix xs move
+    else False
 
 
--- pronta
--- TROCAR PELA MOVE TETROMINO!!
-fallTetromino :: [[Square]] -> [(Int,Int)] -> [[Square]]
-fallTetromino :: [[Square]] -> [(Int,Int)] -> [[Square]]
-fallTetromino matrix [x] = [((fst x + 1), snd x)]
-fallTetromino matrix (x:xs) = ((fst x + 1), snd x) : fallTetromino matrix xs
-
+-- TO TEST
 --move todos os blocos ativos numa direção. presume que eles podem ser movidos
-moveTetromino :: [[Square]] -> Move -> [[Square]]
+moveTetromino :: [[Square]] ->[(Int, Int)] Move -> [[Square]]
+moveTetromino matrix [x] move = [posMove]
+moveTetromino matrix (x:xs) move =posMove : moveTetromino matrix xs move
+    where posMove =
+        if move == Left then ((fst x + 1), snd x)
+        else if move == Right then (fst x, (snd x + 1))
+        else if move == Down then matrix !! ((fst x + 1), snd x)
 
 -- S
 -- Pega uma matriz e retorna a lista de linhas que podem ser limpas
 clearableLines :: [[Square]] -> [Int]
+
 -- usa canClearLine
 
 --S
@@ -56,7 +58,7 @@ clearTheseLines :: [[Square]] -> [Int] -> [[Square]]
 
 -- S
 -- pega uma matriz e retorna ela com todas as linhas clearáveis clearadas
-clearMatrix :: [[Square]] -> ([[Int]], Int)
+clearMatrix :: [[Square]] -> ([[Square]], Int)
 -- clearMatrix grid = 
     -- x = clearableLines grid
     -- clearedMatrix = clearTheseLines grid x
