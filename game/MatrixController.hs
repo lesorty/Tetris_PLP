@@ -20,6 +20,26 @@ findIndexes s matrix = do
 -- canMove matrix coordinate = if bellow == 2 then False else True
 --     where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
 
+data Move = Left | Right | Rotate | Down | SuperDown
+data Color = Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data Piece = None | LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
+data Falling = Enable | Disable deriving Eq
+data Square = (Color,Falling) deriving Eq
+
+-- pronta
+findIndexes :: Int -> [[Square]] -> [(Int, Int)]
+findIndexes s matrix = do
+-- iterate by the rows and columns to get the i and j of the elements
+  (i, row) <- zip [0..] matrix
+  (j, elem) <- zip [0..] row
+  if elem == s then return (i, j) else []
+
+-- -- FALTA MODULARIZAR PARA OS LADOS
+-- A DISCUTIR
+-- canMove :: [[Square]] -> Bool
+-- canMove matrix coordinate = if bellow == 2 then False else True
+--     where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
+
 --recebe uma grid e uma direção (esq, baixo, dir). retorna se os blocos ativos podem se mover nessa direçao
 canMove :: [[Square]] -> Move -> Bool
 
@@ -31,13 +51,6 @@ canMove :: [[Square]] -> Move -> Bool
 --    else False
 -- pega a grid, o conjunto de coordenadas ativas e uma direção. retorna se elas podem ir pra uma direçao
 canMoveTetromino :: [[Square]] -> [(Int,Int)] -> Int -> Bool
-
-
--- pronta
--- TROCAR PELA MOVE TETROMINO!!
---fallTetromino :: [[Square]] -> [(Int,Int)] -> [[Square]]
---fallTetromino matrix [x] = [((fst x + 1), snd x)]
---fallTetromino matrix (x:xs) = ((fst x + 1), snd x) : fallTetromino matrix xs
 
 --move todos os blocos ativos numa direção. presume que eles podem ser movidos
 moveTetromino :: [[Square]] -> Move -> [[Square]]
@@ -59,6 +72,7 @@ clearMatrix :: [[Square]] -> ([[Square]], Int)
     -- clearedMatrix = clearTheseLines grid x
     -- return clearedMatrix 
 
+
 getColor :: Square -> Color
 getColor (Square color _) = color
 
@@ -67,6 +81,7 @@ canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 
 --retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
 canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+
 
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
 changeActiveBlocksPos :: [[Square]] -> [(Int, Int)] -> [[Square]]
@@ -93,6 +108,7 @@ groundBlocks :: [[Square]] -> [[Square]]
 getRandomTetromino :: ([(Int, Int)], Int)
 
 -- bota um tetromino aleatório na grid.
+
 putRandomTetromino :: [[Square]] -> [[Square]]
 
 
@@ -132,4 +148,3 @@ raiseUntilAllowed grid coords
   | canBePutWithSideMove grid coords == 1 = changeActiveBlocksPos grid (map (\k -> (((fst k) - 1), (snd k))) coords)
   | canBePutWithSideMove grid coords == 2 = changeActiveBlocksPos grid (map (\k -> (((fst k) + 1), (snd k))) coords)
   | otherwise = raiseUntilAllowed grid (map (\k -> ((fst k), ((snd k) + 1))) coords)
-
