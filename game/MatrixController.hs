@@ -23,12 +23,13 @@ findActiveIndexes s matrix = do
   (j, elem) <- zip [0..] row
   if elem == Enable then return (i, j) else []
 
-
-
+emptyLine :: [Square]
+emptyLine = replicate 10 emptySquare
+    where emptySquare = Square (Color Black) (Active None)
 
 ------------ PIECE PERMISSION LOGIC ------------
 
-
+-- TO TEST
 --retorna se um conjunto de blocos pode ser colocado na matrix.
 canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 canBePut matrix [] = true
@@ -67,12 +68,13 @@ addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
     where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
 -- TO TEST
-getPosMove :: [[Square]] -> Move -> [(Int, Int)]
-getPosMove matrix move 
+getEndPos :: [[Square]] -> Move -> [(Int, Int)]
+getEndPos matrix move 
   | move == Left = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
   | move == Right = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
   | move == Down = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
 
+-- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
 changeActiveBlocksPos :: [[Square]] -> [(Int, Int)] -> [[Square]]
 changeActiveBlocksPos matrix coordinates = addBlocks updatedMatrix square coordinates
@@ -80,14 +82,17 @@ changeActiveBlocksPos matrix coordinates = addBlocks updatedMatrix square coordi
         updatedMatrix = removeActiveBlocks matrix
         square = Square (getActiveColor matrix) (Active Enable)
 
+-- TO TEST
 -- matrix. 
 moveTetromino :: [[Square]] -> Move -> [[Square]]
+moveTetromino matrix move = changeActiveBlocksPos matrix endPos
+    where endPos = getEndPos matrix move
 
 
 -- S
 fullFall :: [[Square]] -> [[Square]]
 
--- S
+-- L
 -- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
 forceFall :: [[Square]]
 --  showmatrix matrix
@@ -101,33 +106,16 @@ forceFall :: [[Square]]
 ------------ CLEAR MATRIX LOGIC ------------
 
 
--- retorna uma lista com os indices das linahs clearaveis
-clearableLines :: [[Square]] -> [Int]
-clearableLines matrix = [i | (row, i) <- zip matrix [0..], canClearLine matrix i]
-
--- usa canClearLine
-
 -- TO TEST
 -- pega uma matriz e um índice. retorna se essa linha é clearável ou não
-canClearLine :: [[Square]] -> Int -> Bool
-canClearLine matrix rowIndex = allDisable (matrix !! rowIndex)
-    where allDisable xs = all (==Disable) xs
+canClearLine :: [Square] -> Bool
+canClearLine line = all (\k -> getActive k == Disable) line
 
---S
+-- TO TEST
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
-clearTheseLines :: [[Square]] -> [Int] -> [[Square]]
-clearTheseLines matrix lines =
-
-
--- S
--- pega uma matriz e retorna ela com todas as linhas clearáveis clearadas
 clearMatrix :: [[Square]] -> ([[Square]], Int)
--- clearMatrix matrix = 
-    -- x = clearableLines matrix
-    -- clearedMatrix = clearTheseLines matrix x
-    -- return clearedMatrix 
-
-
+clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remainderLines) emptyLine), (25 - length remainderLines))
+    where remainderLines = filter (\k -> canClearLine k) matrix
 
 
 ------------ GAME LOGIC ------------
