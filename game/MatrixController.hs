@@ -20,12 +20,10 @@ findActiveIndexes s matrix = do
   (j, elem) <- zip [0..] row
   if elem == Enable then return (i, j) else []
 
--- TO TEST
-getPosMove :: [[Square]] -> Move -> [(Int, Int)]
-getPosMove matrix move 
-  | move == Left = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes grid)
-  | move == Right = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes grid)
-  | move == Down = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes grid)
+
+
+
+------------ PIECE PERMISSION LOGIC ------------
 
 
 --retorna se um conjunto de blocos pode ser colocado na matrix.
@@ -35,7 +33,14 @@ canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable
 
 -- TO TEST
 canMoveTetromino :: [[Square]] -> Move -> Bool
-canMoveTetromino matrix move = length (filter (==False) (map (\k -> canMove matrix k move) findActiveIndexes)) == 0
+canMoveTetromino matrix move = canBePut matrix (GetPosMove matrix move)
+
+-- S
+--retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
+canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+
+
+------------ PIECE MOVEMENT LOGIC ------------
 
 
 -- magia.
@@ -45,26 +50,50 @@ updateMatrixElement matrix (i, j) newValue =
   [take j (matrix !! i) ++ [newValue] ++ drop (j + 1) (matrix !! i)] ++
   drop (i + 1) matrix
 
-
--- S
+-- TO TEST
 -- Retorna a matrix sem blocos ativos
 removeActiveBlocks :: [[Square]] -> [[Square]]
 removeActiveBlocks [] = []
 removeActiveBlocks (x:xs) =
     map ((Square Color Active) -> if Active == Enable then Square Black None else Square Color Active) x : removeActiveBlocks xs
 
+-- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
 addBlocks matrix square [] = [] 
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
     where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
+-- TO TEST
+getPosMove :: [[Square]] -> Move -> [(Int, Int)]
+getPosMove matrix move 
+  | move == Left = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == Right = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == Down = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
 
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
-changeActiveBlocksPos :: [[Square]] -> Move -> [(Int, Int)]
+changeActiveBlocksPos :: [[Square]] -> [(Int, Int)] -> [[Square]]
 changeActiveBlocksPos matrix move = 
+    where updateddMatrix = removeActiveBlocks matrix
 
 -- matrix. 
 moveTetromino :: [[Square]] -> Move -> [[Square]]
+
+
+-- S
+fullFall :: [[Square]] -> [[Square]]
+
+-- S
+-- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
+forceFall :: [[Square]]
+--  showmatrix matrix
+--  if isGameOver
+--     showGameOver
+--  if !canFall
+--      goToNextCycle
+
+
+
+------------ CLEAR MATRIX LOGIC ------------
 
 
 -- retorna uma lista com os indices das linahs clearaveis
@@ -93,26 +122,13 @@ clearMatrix :: [[Square]] -> ([[Square]], Int)
     -- clearedMatrix = clearTheseLines matrix x
     -- return clearedMatrix 
 
--- S
---retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
-canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
 
+
+
+------------ GAME LOGIC ------------
 -- S
 --retorna true se tem algum bloco acima do limite da matrix, false caso contrário
 isGameOver :: [[Square]] -> Bool
-
-
--- S
-fullFall :: [[Square]] -> [[Square]]
-
--- S
--- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
-forceFall :: [[Square]]
---  showmatrix matrix
---  if isGameOver
---     showGameOver
---  if !canFall
---      goToNextCycle
 
 -- S
 -- desativa todos os blocos
