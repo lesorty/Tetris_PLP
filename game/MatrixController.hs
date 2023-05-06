@@ -37,7 +37,7 @@ canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable
 
 -- TO TEST
 canMoveTetromino :: [[Square]] -> Move -> Bool
-canMoveTetromino matrix move = canBePut matrix (GetPosMove matrix move)
+canMoveTetromino matrix move = canBePut matrix (getEndPos matrix move)
 
 
 
@@ -93,6 +93,7 @@ fullFall matrix =
     if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
     else matrix
 
+
 -- L
 -- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
 forceFall :: [[Square]]
@@ -104,13 +105,14 @@ forceFall :: [[Square]]
 
 
 
+
 ------------ CLEAR MATRIX LOGIC ------------
 
 
 -- TO TEST
 -- pega uma matriz e um índice. retorna se essa linha é clearável ou não
 canClearLine :: [Square] -> Bool
-canClearLine line = all (\k -> getActive k == Disable) line
+canClearLine line = all (\k -> getActive k == (Active Disable)) line
 
 -- TO TEST
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
@@ -121,14 +123,21 @@ clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remain
 
 
 
+
 ------------ GAME LOGIC ------------
--- S
+
+
+-- TO TEST
 --retorna true se tem algum bloco acima do limite da matrix, false caso contrário
 isGameOver :: [[Square]] -> Bool
+isGameOver matrix = not (all (\k -> getColor k == (Color Black)) (concat matrixTop))
+    where matrixTop = drop 20 matrix
 
--- S
+-- TO TEST
 -- desativa todos os blocos
 groundBlocks :: [[Square]] -> [[Square]]
+groundBlocks [] = []
+groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Active Enable) then (Active Disable) else active)) x ++ groundBlocks xs
 
 -- P
 getRandomTetromino :: ([(Int, Int)], Int)
@@ -137,6 +146,8 @@ getRandomTetromino :: ([(Int, Int)], Int)
 -- P
 -- bota um tetromino aleatório na matrix.
 putRandomTetromino :: [[Square]] -> [[Square]]
+
+
 
 
 ------------ PIECE ROTATION LOGIC ------------
@@ -156,7 +167,7 @@ rotate matrix =
   let baseDist = baseDistance matrix
   let zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
   let rotatedZeroed = rotatePoints zeroedIndexes
-  let returnedToPos = rotatePoints
+  let returnedToPos = addTuples rotatedZeroed baseDist
 rotate matrix = raiseUntilAllowed matrix returnedToPos
 
 -- TO TEST
