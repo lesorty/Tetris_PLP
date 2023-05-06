@@ -1,14 +1,17 @@
 import Screen
 import MatrixController
 
-actionLoop :: [[Square]] -> Int -> [[Square]]
-actionLoop grid input 
-    | isGameOver grid = showGameOver
-    | input == 1 = if canMove grid 1 then moveActiveBlocks grid 1 else grid
-    | input == 2 = if canMove grid 2 then moveActiveBlocks grid 2 else grid
-    | input == 3 = if canMove grid 3 then moveActiveBlocks grid 3 else goToNextCycle grid
-    | input == 4 = rotate grid
-    | input == 5 = fullFall grid
+-- TO TEST
+actionLoop :: [[Square]] -> Move -> [[Square]]
+actionLoop matrix input 
+    | isGameOver matrix = showGameOver
+    | input == (Move Left) = if canMoveTetromino matrix (Move Left) then moveTetromino matrix (Move Left) else matrix
+    | input == (Move Right) = if canMoveTetromino matrix (Move Right) then moveTetromino matrix (Move Right) else matrix
+    | input == (Move Down) = if canMoveTetromino matrix (Move Down) then moveTetromino matrix (Move Down) else goToNextCycle matrix
+    | input == (Move Rotate) = rotate matrix
+    | input == (Move SuperDown) = fullFall matrix
 
+
+-- TO TEST
 goToNextCycle :: [[Square]] -> [[Square]]
-goToNextCycle grid = putRandomTetromino . clearMatrix . groundBlocks grid
+goToNextCycle matrix = putRandomTetromino . clearMatrix . groundBlocks matrix

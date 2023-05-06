@@ -1,135 +1,205 @@
 module MatrixController where
   
-data Move = Left | Right | Rotate | Down | SuperDown
-data Color = Empty | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
-data Piece = None | LeftL | RightL | TwoByTwo | Rectangule | LeftS | RigthS | T deriving Eq
-data Falling = Enable | Disable deriving Eq
+data Move = Left | Right | Rotate | Down | SuperDown deriving Eq
+data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
+data Active = Enable | Disable | None deriving Eq
 data Square = Square Color Falling deriving Eq
-
--- L: Essa função está bugada
-findIndexes :: Int -> [[Square]] -> [(Int, Int)]
-findIndexes s matrix = do
--- iterate by the rows and columns to get the i and j of the elements
-  (i, row) <- zip [0..] matrix
-  (j, elem) <- zip [0..] row
-  if elem == s then return (i, j) else []
-
--- -- FALTA MODULARIZAR PARA OS LADOS
--- A DISCUTIR
--- canMove :: [[Square]] -> Bool
--- canMove matrix coordinate = if bellow == 2 then False else True
---     where bellow = matrix !! ((fst coordinate) + 1) !! (snd coordinate) 
-
---recebe uma grid e uma direção (esq, baixo, dir). retorna se os blocos ativos podem se mover nessa direçao
-canMove :: [[Square]] -> Move -> Bool
-
--- PARA CONSULTA
---canFallDownBlock :: [[Int]] -> [(Int,Int)] -> Bool
---canFallDownBlock matrix [x] =  canFallDown matrix (fst x, snd x)
---canFallDownBlock matrix (x:xs) =
---    if canFallDown matrix (fst x, snd x) then  canFallDownBlock matrix xs
---    else False
--- pega a grid, o conjunto de coordenadas ativas e uma direção. retorna se elas podem ir pra uma direçao
-canMoveTetromino :: [[Square]] -> [(Int,Int)] -> Int -> Bool
-
-
--- pronta
--- TROCAR PELA MOVE TETROMINO!!
---fallTetromino :: [[Square]] -> [(Int,Int)] -> [[Square]]
---fallTetromino matrix [x] = [((fst x + 1), snd x)]
---fallTetromino matrix (x:xs) = ((fst x + 1), snd x) : fallTetromino matrix xs
-
---move todos os blocos ativos numa direção. presume que eles podem ser movidos
-moveTetromino :: [[Square]] -> Move -> [[Square]]
-
--- Pega uma matriz e retorna a lista de linhas que podem ser limpas
-clearableLines :: [[Square]] -> [Int]
--- usa canClearLine
-
--- pega uma matriz e um índice. retorna se essa linha é clearável ou não
-canClearLine :: [[Square]] -> Int -> Bool
-
--- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
-clearTheseLines :: [[Square]] -> [Int] -> [[Square]]
-
--- pega uma matriz e retorna ela com todas as linhas clearáveis clearadas
-clearMatrix :: [[Square]] -> ([[Square]], Int)
--- clearMatrix grid = 
-    -- x = clearableLines grid
-    -- clearedMatrix = clearTheseLines grid x
-    -- return clearedMatrix 
 
 getColor :: Square -> Color
 getColor (Square color _) = color
 
---retorna se um conjunto de blocos pode ser colocado na grid.
+getActive :: Square -> Active
+getActive (Square _ active) = active
+
+getActiveColor :: [[Square]] -> Color
+getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
+
+-- TO TEST
+findActiveIndexes :: [[Square]] -> [(Int, Int)]
+findActiveIndexes s matrix = do
+-- iterate by the rows and columns to get the i and j of the elements
+  (i, row) <- zip [0..] matrix
+  (j, elem) <- zip [0..] row
+  if elem == Enable then return (i, j) else []
+
+emptyLine :: [Square]
+emptyLine = replicate 10 emptySquare
+    where emptySquare = Square (Color Black) (Active None)
+
+------------ PIECE PERMISSION LOGIC ------------
+
+-- TO TEST
+--retorna se um conjunto de blocos pode ser colocado na matrix.
 canBePut :: [[Square]] -> [(Int, Int)] -> Bool
+canBePut matrix [] = true
+canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable then False else canBePut matrix ts
 
---retorna 1 se pode ser posto com um movimento pra esquerda. 2 com um pra direita. 0 se não pode
-canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+-- TO TEST
+canMoveTetromino :: [[Square]] -> Move -> Bool
+canMoveTetromino matrix move = canBePut matrix (getEndPos matrix move)
 
+
+
+
+------------ PIECE MOVEMENT LOGIC ------------
+
+
+-- magia.
+updateMatrixElement :: [[Square]] -> (Int, Int) -> Square -> [[Square]]
+updateMatrixElement matrix (i, j) newValue =
+  take i matrix ++
+  [take j (matrix !! i) ++ [newValue] ++ drop (j + 1) (matrix !! i)] ++
+  drop (i + 1) matrix
+
+-- TO TEST
+-- Retorna a matrix sem blocos ativos
+removeActiveBlocks :: [[Square]] -> [[Square]]
+removeActiveBlocks [] = []
+removeActiveBlocks (x:xs) =
+    map ((Square Color Active) -> if Active == Enable then Square Black None else Square Color Active) x : removeActiveBlocks xs
+
+-- TO TEST
+addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
+addBlocks matrix square [] = [] 
+addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
+    where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
+
+-- TO TEST
+getEndPos :: [[Square]] -> Move -> [(Int, Int)]
+getEndPos matrix move 
+  | move == (Move Left) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == (Move Right) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == (Move Down) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+
+-- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
 changeActiveBlocksPos :: [[Square]] -> [(Int, Int)] -> [[Square]]
+changeActiveBlocksPos matrix coordinates = addBlocks updatedMatrix square coordinates
+    where 
+        updatedMatrix = removeActiveBlocks matrix
+        square = Square (getActiveColor matrix) (Active Enable)
 
---retorna true se tem algum bloco acima do limite da grid, false caso contrário
-isGameOver :: [[Square]] -> Bool
+-- TO TEST
+-- matrix. 
+moveTetromino :: [[Square]] -> Move -> [[Square]]
+moveTetromino matrix move = changeActiveBlocksPos matrix endPos
+    where endPos = getEndPos matrix move
 
--- Retorna a grid sem blocos ativos
-removeActiveBlocks :: [[Square]] -> [[Square]]
 
+-- TO TEST
 fullFall :: [[Square]] -> [[Square]]
+fullFall matrix = 
+    if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
+    else matrix
 
--- retorna a nova grid, com os blocos ativos derrubados pra baixo.
+
+-- L
+-- retorna a nova matrix, com os blocos ativos derrubados pra baixo.
 forceFall :: [[Square]]
---  showGrid grid
+--  showmatrix matrix
 --  if isGameOver
 --     showGameOver
 --  if !canFall
 --      goToNextCycle
 
+
+
+
+------------ CLEAR MATRIX LOGIC ------------
+
+
+-- TO TEST
+-- pega uma matriz e um índice. retorna se essa linha é clearável ou não
+canClearLine :: [Square] -> Bool
+canClearLine line = all (\k -> getActive k == (Active Disable)) line
+
+-- TO TEST
+-- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
+clearMatrix :: [[Square]] -> ([[Square]], Int)
+clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remainderLines) emptyLine), (25 - length remainderLines))
+    where remainderLines = filter (\k -> canClearLine k) matrix
+
+
+
+
+
+------------ GAME LOGIC ------------
+
+
+-- TO TEST
+--retorna true se tem algum bloco acima do limite da matrix, false caso contrário
+isGameOver :: [[Square]] -> Bool
+isGameOver matrix = not (all (\k -> getColor k == (Color Black)) (concat matrixTop))
+    where matrixTop = drop 20 matrix
+
+-- TO TEST
 -- desativa todos os blocos
 groundBlocks :: [[Square]] -> [[Square]]
+groundBlocks [] = []
+groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Active Enable) then (Active Disable) else active)) x ++ groundBlocks xs
 
+-- P
 getRandomTetromino :: ([(Int, Int)], Int)
 
--- bota um tetromino aleatório na grid.
+
+-- P
+-- bota um tetromino aleatório na matrix.
 putRandomTetromino :: [[Square]] -> [[Square]]
+
+
 
 
 ------------ PIECE ROTATION LOGIC ------------
 
+-- TO TEST
+canBePutWithSideMove :: [[Square]] -> [(Int, Int)] -> Int
+canBePutWithSideMove matrix positions
+    | canBePut matrix (map (\k -> ((fst k) - 1, snd k)) positions) = 1
+    | canBePut matrix (map (\k -> ((fst k) + 1, snd k)) positions) = 2
+    | otherwise = 0
+
+-- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
 rotate :: [[Square]] -> [[Square]]
-rotate grid =
-  let activeIndexes = findIndexes grid
-  let baseDist = baseDistance grid
+rotate matrix =
+  let activeIndexes = findActiveIndexes matrix
+  let baseDist = baseDistance matrix
   let zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
   let rotatedZeroed = rotatePoints zeroedIndexes
-  let returnedToPos = rotatePoints
-rotate grid = raiseUntilAllowed grid returnedToPos
+  let returnedToPos = addTuples rotatedZeroed baseDist
+rotate matrix = raiseUntilAllowed matrix returnedToPos
 
--- pega um conjunto de pontos na grid. retorna, dentre os pontos mais baixos, o mais à esquerda
+-- TO TEST
+-- pega um conjunto de pontos na matrix. retorna, dentre os pontos mais baixos, o mais à esquerda
 baseDistance :: [(Int, Int)] -> (Int, Int)
 baseDistance cloud =
   let base = filter (\x -> snd x == min (map snd cloud))
       maisEsquerdaDaBase = filter (\x -> fst x == min (map fst base)) base
   in head maisEsquerdaDaBase
 
+
+-- TO TEST
 subtractTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 subtractTuples (a, b) (c, d) = (a - c, b - d)
 
+
+-- TO TEST
 addTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 addTuples (a, b) (c, d) = (a + c, b + d)
 
+
+-- TO TEST
 -- rotaciona um conjunto de pontos no sentido horário
 rotatePoints :: [(Int, Int)] -> [(Int, Int)]
 rotatePoints cloud = map (\x -> (snd x, -(fst x))) cloud
 
+
+-- TO TEST
 --pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então bota elas na matriz
 raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [[Square]]
-raiseUntilAllowed grid coords 
-  | canBePut grid coords = changeActiveBlocksPos grid coords
-  | canBePutWithSideMove grid coords == 1 = changeActiveBlocksPos grid (map (\k -> (((fst k) - 1), (snd k))) coords)
-  | canBePutWithSideMove grid coords == 2 = changeActiveBlocksPos grid (map (\k -> (((fst k) + 1), (snd k))) coords)
-  | otherwise = raiseUntilAllowed grid (map (\k -> ((fst k), ((snd k) + 1))) coords)
-
+raiseUntilAllowed matrix coords 
+  | canBePut matrix coords = changeActiveBlocksPos matrix coords
+  | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
+  | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
+  | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
