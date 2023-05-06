@@ -12,6 +12,9 @@ getColor (Square color _) = color
 getActive :: Square -> Active
 getActive (Square _ active) = active
 
+getActiveColor :: [[Square]] -> Color
+getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
+
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
 findActiveIndexes s matrix = do
@@ -72,8 +75,10 @@ getPosMove matrix move
 
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
 changeActiveBlocksPos :: [[Square]] -> [(Int, Int)] -> [[Square]]
-changeActiveBlocksPos matrix move = 
-    where updateddMatrix = removeActiveBlocks matrix
+changeActiveBlocksPos matrix coordinates = addBlocks updatedMatrix square coordinates
+    where 
+        updatedMatrix = removeActiveBlocks matrix
+        square = Square (getActiveColor matrix) (Active Enable)
 
 -- matrix. 
 moveTetromino :: [[Square]] -> Move -> [[Square]]
