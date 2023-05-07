@@ -140,7 +140,19 @@ groundBlocks [] = []
 groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Active Enable) then (Active Disable) else active)) x ++ groundBlocks xs
 
 -- P
-getRandomTetromino :: ([(Int, Int)], Int)
+getRandomTetromino :: ([(Int, Int)])
+getRandomTetromino = do
+  num <- randomRIO (0, 6)
+  let tetromino = case num of
+        0 -> [(0,0),(0,1),(1,0),(2,0)]
+        1 -> [(0,0),(0,1),(1,1),(2,1)]
+        2 -> [(0,0),(0,1),(1,0),(1,1)]
+        3 -> [(0,0),(0,1),(1,1),(1,2)]
+        4 -> [(0,0),(0,1),(0,2),(1,1)]
+        5 -> [(0,0),(0,1),(1,1),(2,1)]
+        6 -> [(0,0),(0,1),(1,1),(2,1)]
+
+  return tetromino
 
 
 -- P
