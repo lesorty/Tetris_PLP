@@ -15,6 +15,10 @@ getActive (Square _ active) = active
 getActiveColor :: [[Square]] -> Color
 getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
 
+emptyMatrix :: [[Square]]
+emptyMatrix = replicate 25 emptyLine
+
+
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
 findActiveIndexes s matrix = do
@@ -168,7 +172,8 @@ rotate matrix =
   let zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
   let rotatedZeroed = rotatePoints zeroedIndexes
   let returnedToPos = addTuples rotatedZeroed baseDist
-rotate matrix = raiseUntilAllowed matrix returnedToPos
+  let enclosed = encloseCoords returnedToPos
+rotate matrix = raiseUntilAllowed matrix enclosed
 
 -- TO TEST
 -- pega um conjunto de pontos na matrix. retorna, dentre os pontos mais baixos, o mais à esquerda
@@ -203,3 +208,15 @@ raiseUntilAllowed matrix coords
   | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
   | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
   | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
+
+encloseCoords :: [(Int, Int)] -> [(Int, Int)]
+encloseCoords coords = newCoords
+  where
+    minX = min (map (\k -> fst k) coords)
+    maxX = max (map (\k -> fst k) coords)
+    newCoords
+    | minX < 0 = map (\k -> ((fst k) - minX, snd k) coords)
+    | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k) coords)
+    | otherwise = coords
+  
+
