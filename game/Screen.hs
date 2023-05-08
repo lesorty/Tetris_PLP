@@ -1,15 +1,14 @@
 module Screen where
 
+import Graphics.Gloss
 import MatrixController
 
-import Graphics.Gloss
-
-
 -- showGrid, desenha o grid completo na tela, com divisórias
-showGrid :: [String] -> Picture
-showGrid g =
+showGrid :: Int -> [String] -> Picture
+showGrid score g =
   let cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
-   in pictures cells
+      scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
+   in pictures [scoreBox, pictures cells]
 
 -- Define a largura e a altura de cada célula do grid
 cellWidth :: Float
