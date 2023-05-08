@@ -1,15 +1,11 @@
 import Screen
 import MatrixController
-import Data.Map (Map)
-import qualified Data.Map as Map
-import System.IO
 
--- Eu nao tenho certeza se essa implementação vai ser a melhor sae é q tem mais de uma forma de fazer,
--- mas de toda forma ta aqui
+
 -- TO TEST
-type Highscores = Map String Int
-filePath :: FilePath
-filePath :: "highscores.txt"
+highScoreFile :: FilePath
+highScoreFile = "highscore.txt"
+
 
 -- TO TEST
 actionLoop :: [[Square]] -> Move -> [[Square]]
@@ -28,26 +24,18 @@ goToNextCycle matrix = putRandomTetromino . clearMatrix . groundBlocks matrix
 
 
 -- TO TEST
-getHighscores :: Highscores
-getHighscores = do
-  fileExists <- doesFileExist filePath
+getHighScore :: Int
+getHighScore = do
+  fileExists <- doesFileExist highScoreFile
   if fileExists
-    then do
-      contents <- readFile filePath
-      return (Map.fromList (read contents))
-    else return Map.empty
+    then withFile highScoreFile ReadMode $ \handle -> do
+      contents <- hGetContents handle
+      return (read contents)
+    else return 0
 
 
--- Simples, se o nome ja esta registrado nos highscores e o score a ser adicionado é menor do que a que
--- já estava lá, o novo score não é registrado, caso contrário, ele é registrado novamente 
--- Vai ser necessário pedir o nome do jogador em algum lugar. Possivelmente  uma tela com "Save highscore?".
--- A ser discutido.
 -- TO TEST
-updateHighscores :: Highscores -> String -> Int -> Highscores
-updateHighscores highscores name newscore = 
-    if Map.member name highscores == True && newscore > Map.lookup name highscores
-        then Map.insertWith max name score highscores
-        else return
-
-
-playMusic
+updateHighScore :: Int
+updateHighScore score = do
+  withFile highScoreFile WriteMode $ \handle -> do
+    hPrint handle score
