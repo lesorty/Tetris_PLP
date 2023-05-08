@@ -33,3 +33,10 @@ main = play window black 30 emptyMatrix showGrid (\event matrix -> nextBoardStat
 
 
 
+inputToMove :: Event -> Move
+inputToMove (EventKey (Char 'a') Down _ _) = MoveLeft
+inputToMove (EventKey (Char 'd') Down _ _) = MoveRight
+inputToMove (EventKey (Char 'w') Down _ _) = MoveRotate
+inputToMove (EventKey (Char 's') Down _ _) = MoveDown
+inputToMove (EventKey (SpecialKey KeySpace) Down _ _) = SuperBaixo
+inputToMove _ = MoveNone
