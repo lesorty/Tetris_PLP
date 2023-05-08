@@ -5,6 +5,7 @@ data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red derivi
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
 data Square = Square Color Falling deriving Eq
+data Tetromino = Tetromino [(Int,Int)] Color deriving Eq
 
 getColor :: Square -> Color
 getColor (Square color _) = color
@@ -18,6 +19,11 @@ getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat gr
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
 
+getTetrominoBlocks :: Tetromino -> [(Int, Int)]
+getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
+
+getTetrominoColor :: Tetromino -> String
+getTetrominoBlocks (Tetromino _ color) = color
 
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
@@ -144,14 +150,31 @@ groundBlocks [] = []
 groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Active Enable) then (Active Disable) else active)) x ++ groundBlocks xs
 
 -- P
-getRandomTetromino :: ([(Int, Int)], Int)
+getRandomTetromino :: Tetromino
+getRandomTetromino = case randomRIO (0, 6) of
+    0 -> [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
+    1 -> [(0,0),(1,0),(0,1),(0,2)] Orange -- L
+    2 -> [(0,0),(1,0),(0,1),(1,1)] Yellow -- O
+    3 -> [(0,0),(1,0),(1,1),(1,2)] Green -- S
+    4 -> [(0,0),(1,0),(2,0),(1,1)] Pink -- T
+    5 -> [(0,0),(1,0),(1,1),(2,1)] Blue -- J
+    6 -> [(0,0),(0,1),(1,1),(1,2)] Red -- Z
 
 
 -- P
 -- bota um tetromino aleatório na matrix.
+
+-- Aqui embaixo acho q vai haver um problema com a estrutura do codigo no geral, eu n acho
+-- q a parte q é responsavel por chamar esse comando dnv deve estar aqui dentro, ja que ele (presumo)
+-- n é responsavel por checar se a peça ja foi encaixada. A discutir
+-- PS eu provavelmente me atrapalhei com os numeros mas isso pode ser concertado rapidamente.
+-- So mandar msg.
+
+
+-- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-
-
+where newTetronimo = getRandomTetromino
+putRandomTetromino x = addBlocks matrix (Square (getTetrominoColor newTetronimo)) (getTetrominoBlocks newTetronimo)
 
 
 ------------ PIECE ROTATION LOGIC ------------

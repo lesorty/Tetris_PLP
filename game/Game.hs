@@ -10,6 +10,11 @@ data GameState = GameState {
 }
 
 -- TO TEST
+highScoreFile :: FilePath
+highScoreFile = "highscore.txt"
+
+
+-- TO TEST
 nextBoardState :: [[Square]] -> Move -> [[Square]]
 nextBoardState matrix input 
     | isGameOver matrix = showGameOver
@@ -40,3 +45,20 @@ inputToMove (EventKey (Char 'w') Down _ _) = MoveRotate
 inputToMove (EventKey (Char 's') Down _ _) = MoveDown
 inputToMove (EventKey (SpecialKey KeySpace) Down _ _) = SuperBaixo
 inputToMove _ = MoveNone
+
+-- TO TEST
+getHighScore :: Int
+getHighScore = do
+  fileExists <- doesFileExist highScoreFile
+  if fileExists
+    then withFile highScoreFile ReadMode $ \handle -> do
+      contents <- hGetContents handle
+      return (read contents)
+    else return 0
+
+
+-- TO TEST
+updateHighScore :: Int
+updateHighScore score = do
+  withFile highScoreFile WriteMode $ \handle -> do
+    hPrint handle score
