@@ -54,4 +54,22 @@ drawCell (x, y) c =
       bottomLine = line [(fst pos - cellWidth / 2, snd pos - cellHeight / 2), (fst pos + cellWidth / 2, snd pos - cellHeight / 2)]
    in pictures [leftLine, topLine, rightLine, bottomLine, color col $ uncurry translate pos cell]
 
--- showGameOver :: ?????
+-- exibe a tela de game over com a pontuação atual e highscore
+showPreviousHighscore :: Int -> Picture
+showPreviousHighscore x = 
+  pictures [
+    translate (-200) (-150) $ color white $ scale 0.2 0.2 $ text ("O seu high score eh de: "),
+    translate (150) (-150) $ color yellow $ scale 0.2 0.2 $ text (show x)
+  ]
+
+showGameOver :: Int -> Int -> IO ()
+showGameOver pontosAtual highScore = display FullScreen black (pictures [
+      translate (-210) 0 $ color red $ scale 0.5 0.5 $ text "Game Over! :(",
+      translate (-200) (-50) $ color white $ scale 0.25 0.25 $ text "pressione ESC para sair",
+      translate (-200) (-100) $ color white $ scale 0.2 0.2 $ text ("A sua pontuacao foi de: "),
+      translate (150) (-100) $ color yellow $ scale 0.2 0.2 $ text (show pontosAtual),
+      if pontosAtual > highScore then
+        translate (-175) (-150) $ color green $ scale 0.2 0.2 $ text "Isso eh um novo highscore!!"
+      else
+        showPreviousHighscore highScore
+  ])

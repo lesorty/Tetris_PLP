@@ -15,3 +15,11 @@ actionLoop matrix input
 -- TO TEST
 goToNextCycle :: [[Square]] -> [[Square]]
 goToNextCycle matrix = putRandomTetromino . clearMatrix . groundBlocks matrix
+
+inputToMove :: Event -> Move
+inputToMove (EventKey (Char 'a') Down _ _) = MoveLeft
+inputToMove (EventKey (Char 'd') Down _ _) = MoveRight
+inputToMove (EventKey (Char 'w') Down _ _) = MoveRotate
+inputToMove (EventKey (Char 's') Down _ _) = MoveDown
+inputToMove (EventKey (SpecialKey KeySpace) Down _ _) = SuperBaixo
+inputToMove _ = MoveNone
