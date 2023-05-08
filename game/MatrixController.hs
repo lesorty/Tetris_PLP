@@ -16,17 +16,14 @@ getActive (Square _ active) = active
 getActiveColor :: [[Square]] -> Color
 getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
 
-<<<<<<< HEAD
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
 
-=======
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
 
 getTetrominoColor :: Tetromino -> String
 getTetrominoBlocks (Tetromino _ color) = color
->>>>>>> 0ad7e8c9be94f859a17d358b13015c39ffeb970f
 
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
