@@ -1,6 +1,6 @@
 module MatrixController where
   
-data Move = Left | Right | Rotate | Down | SuperDown deriving Eq
+data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
 data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
@@ -14,6 +14,10 @@ getActive (Square _ active) = active
 
 getActiveColor :: [[Square]] -> Color
 getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
+
+emptyMatrix :: [[Square]]
+emptyMatrix = replicate 25 emptyLine
+
 
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
@@ -68,9 +72,9 @@ addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
 -- TO TEST
 getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
-  | move == (Move Left) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
-  | move == (Move Right) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == (Move Down) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == (Move MoveLeft) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == (Move MoveRight) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == (Move MoveDown) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -90,7 +94,7 @@ moveTetromino matrix move = changeActiveBlocksPos matrix endPos
 -- TO TEST
 fullFall :: [[Square]] -> [[Square]]
 fullFall matrix = 
-    if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
+    if canMoveTetromino matrix (Move MoveDown) then fullFall (moveTetromino matrix (Move MoveDown))
     else matrix
 
 
@@ -180,7 +184,8 @@ rotate matrix =
   let zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
   let rotatedZeroed = rotatePoints zeroedIndexes
   let returnedToPos = addTuples rotatedZeroed baseDist
-rotate matrix = raiseUntilAllowed matrix returnedToPos
+  let enclosed = encloseCoords returnedToPos
+rotate matrix = raiseUntilAllowed matrix enclosed
 
 -- TO TEST
 -- pega um conjunto de pontos na matrix. retorna, dentre os pontos mais baixos, o mais à esquerda
@@ -215,3 +220,15 @@ raiseUntilAllowed matrix coords
   | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
   | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
   | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
+
+encloseCoords :: [(Int, Int)] -> [(Int, Int)]
+encloseCoords coords = newCoords
+  where
+    minX = min (map (\k -> fst k) coords)
+    maxX = max (map (\k -> fst k) coords)
+    newCoords
+    | minX < 0 = map (\k -> ((fst k) - minX, snd k) coords)
+    | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k) coords)
+    | otherwise = coords
+  
+
