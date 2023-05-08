@@ -1,6 +1,6 @@
 module MatrixController where
   
-data Move = Left | Right | Rotate | Down | SuperDown deriving Eq
+data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
 data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
@@ -68,9 +68,9 @@ addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
 -- TO TEST
 getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
-  | move == (Move Left) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
-  | move == (Move Right) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == (Move Down) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == (Move MoveLeft) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == (Move MoveRight) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == (Move MoveDown) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -90,7 +90,7 @@ moveTetromino matrix move = changeActiveBlocksPos matrix endPos
 -- TO TEST
 fullFall :: [[Square]] -> [[Square]]
 fullFall matrix = 
-    if canMoveTetromino matrix (Move Down) then fullFall (moveTetromino matrix (Move Down))
+    if canMoveTetromino matrix (Move MoveDown) then fullFall (moveTetromino matrix (Move MoveDown))
     else matrix
 
 
