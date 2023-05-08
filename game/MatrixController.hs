@@ -5,6 +5,7 @@ data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red derivi
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
 data Square = Square Color Falling deriving Eq
+data Tetromino = Tetromino [(Int,Int)] Color deriving Eq
 
 getColor :: Square -> Color
 getColor (Square color _) = color
@@ -14,6 +15,12 @@ getActive (Square _ active) = active
 
 getActiveColor :: [[Square]] -> Color
 getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
+
+getTetrominoBlocks :: Tetromino -> [(Int, Int)]
+getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
+
+getTetrominoColor :: Tetromino -> String
+getTetrominoBlocks (Tetromino _ color) = color
 
 -- TO TEST
 findActiveIndexes :: [[Square]] -> [(Int, Int)]
@@ -140,19 +147,15 @@ groundBlocks [] = []
 groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Active Enable) then (Active Disable) else active)) x ++ groundBlocks xs
 
 -- P
-getRandomTetromino :: ([(Int, Int)])
-getRandomTetromino = do
-  num <- randomRIO (0, 6)
-  let tetromino = case num of
-        0 -> [(0,0),(0,1),(0,2),(0,3)] -- I
-        1 -> [(0,0),(0,1),(1,0),(2,0)] -- L
-        2 -> [(0,0),(0,1),(1,0),(1,1)] -- O
-        3 -> [(0,0),(0,1),(1,1),(2,1)] -- S
-        4 -> [(0,0),(0,1),(0,2),(1,1)] -- T
-        5 -> [(0,0),(0,1),(1,1),(1,2)] -- J
-        6 -> [(0,0),(1,0),(1,1),(2,1)] -- Z
-
-  return tetromino
+getRandomTetromino :: Tetromino
+getRandomTetromino = case randomRIO (0, 6) of
+    0 -> [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
+    1 -> [(0,0),(1,0),(0,1),(0,2)] Orange -- L
+    2 -> [(0,0),(1,0),(0,1),(1,1)] Yellow -- O
+    3 -> [(0,0),(1,0),(1,1),(1,2)] Green -- S
+    4 -> [(0,0),(1,0),(2,0),(1,1)] Pink -- T
+    5 -> [(0,0),(1,0),(1,1),(2,1)] Blue -- J
+    6 -> [(0,0),(0,1),(1,1),(1,2)] Red -- Z
 
 
 -- P
@@ -167,16 +170,8 @@ getRandomTetromino = do
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-putRandomTetromino x =
-  | x == [(0,0),(0,1),(0,2),(0,3)] = changeActiveBlocksPos matrix addTuples (6,5) x -- I
-  | x == [(0,0),(0,1),(1,0),(2,0)] = changeActiveBlocksPos matrix addTuples (4,7) x -- L
-  | x == [(0,0),(0,1),(1,0),(1,1)] = changeActiveBlocksPos matrix addTuples (5,7) x -- O
-  | x == [(0,0),(0,1),(1,1),(2,1)] = changeActiveBlocksPos matrix addTuples (5,6) x -- S
-  | x == [(0,0),(0,1),(0,2),(1,1)] = changeActiveBlocksPos matrix addTuples (5,6) x -- T
-  | x == [(0,0),(0,1),(1,1),(1,2)] = changeActiveBlocksPos matrix addTuples (4,7) x -- J
-  | x == [(0,0),(1,0),(1,1),(2,1)] = changeActiveBlocksPos matrix addTuples (4,7) x -- Z
-
-
+where newTetronimo = getRandomTetromino
+putRandomTetromino x = addBlocks matrix (Square (getTetrominoColor newTetronimo)) (getTetrominoBlocks newTetronimo)
 
 
 ------------ PIECE ROTATION LOGIC ------------
