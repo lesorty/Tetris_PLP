@@ -144,20 +144,37 @@ getRandomTetromino :: ([(Int, Int)])
 getRandomTetromino = do
   num <- randomRIO (0, 6)
   let tetromino = case num of
-        0 -> [(0,0),(0,1),(1,0),(2,0)]
-        1 -> [(0,0),(0,1),(1,1),(2,1)]
-        2 -> [(0,0),(0,1),(1,0),(1,1)]
-        3 -> [(0,0),(0,1),(1,1),(1,2)]
-        4 -> [(0,0),(0,1),(0,2),(1,1)]
-        5 -> [(0,0),(0,1),(1,1),(2,1)]
-        6 -> [(0,0),(0,1),(1,1),(2,1)]
+        0 -> [(0,0),(0,1),(0,2),(0,3)] -- I
+        1 -> [(0,0),(0,1),(1,0),(2,0)] -- L
+        2 -> [(0,0),(0,1),(1,0),(1,1)] -- O
+        3 -> [(0,0),(0,1),(1,1),(2,1)] -- S
+        4 -> [(0,0),(0,1),(0,2),(1,1)] -- T
+        5 -> [(0,0),(0,1),(1,1),(1,2)] -- J
+        6 -> [(0,0),(1,0),(1,1),(2,1)] -- Z
 
   return tetromino
 
 
 -- P
 -- bota um tetromino aleatório na matrix.
+
+-- Aqui embaixo acho q vai haver um problema com a estrutura do codigo no geral, eu n acho
+-- q a parte q é responsavel por chamar esse comando dnv deve estar aqui dentro, ja que ele (presumo)
+-- n é responsavel por checar se a peça ja foi encaixada. A discutir
+-- PS eu provavelmente me atrapalhei com os numeros mas isso pode ser concertado rapidamente.
+-- So mandar msg.
+
+
+-- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
+putRandomTetromino x =
+  | x == [(0,0),(0,1),(0,2),(0,3)] = changeActiveBlocksPos matrix addTuples (6,5) x -- I
+  | x == [(0,0),(0,1),(1,0),(2,0)] = changeActiveBlocksPos matrix addTuples (4,7) x -- L
+  | x == [(0,0),(0,1),(1,0),(1,1)] = changeActiveBlocksPos matrix addTuples (5,7) x -- O
+  | x == [(0,0),(0,1),(1,1),(2,1)] = changeActiveBlocksPos matrix addTuples (5,6) x -- S
+  | x == [(0,0),(0,1),(0,2),(1,1)] = changeActiveBlocksPos matrix addTuples (5,6) x -- T
+  | x == [(0,0),(0,1),(1,1),(1,2)] = changeActiveBlocksPos matrix addTuples (4,7) x -- J
+  | x == [(0,0),(1,0),(1,1),(2,1)] = changeActiveBlocksPos matrix addTuples (4,7) x -- Z
 
 
 
