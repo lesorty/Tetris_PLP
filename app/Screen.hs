@@ -4,7 +4,7 @@ import Graphics.Gloss
 import MatrixController
 
 -- showGrid, desenha o grid completo na tela, com divisórias
-showGrid :: [String] -> Int -> Picture
+showGrid :: [[Square]] -> Int -> Picture
 showGrid g score =
   let cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
       scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
@@ -17,6 +17,10 @@ cellWidth = 30.0
 cellHeight :: Float
 cellHeight = 30.0
 
+
+window :: Display
+window = InWindow "My Game" (1600, 600) (10, 10)
+
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color
 colorForSquare square
@@ -25,7 +29,7 @@ colorForSquare square
   | blockColor == Orange = makeColorI 255 102 0 255 -- laranja
   | blockColor == Yellow = makeColorI 255 255 0 255 -- amarelo
   | blockColor == Green = makeColorI 0 179 89 255 -- verde
-  | blockColor == Purple = makeColorI 178 41 163 255 -- roxo
+  | blockColor == Violet = makeColorI 178 41 163 255 -- roxo
   | blockColor == Red = makeColorI 255 51 51 255 -- vermelho
   | otherwise = makeColorI 217 217 217 255 -- cor do fundo
   where blockColor = getColor square
@@ -44,7 +48,7 @@ cellToScreen (x, y) =
 -- Desenha uma célula na tela, com divisórias
 drawCell :: (Int, Int) -> Square -> Picture
 drawCell (x, y) sq =
-  let col = colorForChar sq
+  let col = colorForSquare sq
       pos = cellToScreen (x, y)
       cell = rectangleSolid cellWidth cellHeight
       -- Adiciona as divisórias da célula
@@ -62,8 +66,8 @@ showPreviousHighscore x =
     translate (150) (-150) $ color yellow $ scale 0.2 0.2 $ text (show x)
   ]
 
-showGameOver :: Int -> Int -> IO ()
-showGameOver pontosAtual highScore = display FullScreen black (pictures [
+showGameOver :: Int -> Int -> Picture
+showGameOver pontosAtual highScore = pictures [
       translate (-210) 0 $ color red $ scale 0.5 0.5 $ text "Game Over! :(",
       translate (-200) (-50) $ color white $ scale 0.25 0.25 $ text "pressione ESC para sair",
       translate (-200) (-100) $ color white $ scale 0.2 0.2 $ text ("A sua pontuacao foi de: "),
@@ -72,4 +76,4 @@ showGameOver pontosAtual highScore = display FullScreen black (pictures [
         translate (-175) (-150) $ color green $ scale 0.2 0.2 $ text "Isso eh um novo highscore!!"
       else
         showPreviousHighscore highScore
-  ])
+  ]
