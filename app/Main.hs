@@ -1,5 +1,6 @@
 module Main where
 import System.IO
+import System.Directory
 import Control.Concurrent
 import Screen
 import MatrixController
