@@ -19,7 +19,7 @@ cellHeight = 30.0
 
 
 window :: Display
-window = InWindow "My Game" (1600, 600) (10, 10)
+window = InWindow "My Game" (400, 800) (10, 10)
 
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color
@@ -35,14 +35,14 @@ colorForSquare square
   where blockColor = getColor square
 
 -- Define o array de strings predefinido
-grid :: [String]
-grid = replicate 20 "abcdefg.ab"
+--grid :: [String]
+--grid = replicate 20 "abcdefg.ab"
 
 -- Converte uma coordenada de célula (x, y) em uma posição da tela (x, y)
 cellToScreen :: (Int, Int) -> (Float, Float)
 cellToScreen (x, y) =
-  let x' = fromIntegral x * cellWidth - (cellWidth * fromIntegral (length (head grid))) / 2
-      y' = fromIntegral y * cellHeight - (cellHeight * fromIntegral (length grid)) / 2
+  let x' = fromIntegral x * cellWidth - (cellWidth * 10) / 2
+      y' = fromIntegral y * cellHeight - (cellHeight * 20) / 2
    in (x', y')
 
 -- Desenha uma célula na tela, com divisórias

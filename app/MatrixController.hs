@@ -23,6 +23,10 @@ getActiveColor matrix = firstActiveColor
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
 
+--uses emptyMatrix
+bottomLeftFilledMatrix :: [[Square]]
+bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Disable)
+
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
 
