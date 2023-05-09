@@ -2,6 +2,7 @@ import System.IO
 import Control.Concurrent
 import Screen
 import MatrixController
+import System.Directory (DoesFileExist)
 
 data GameState = GameState {
     matrix :: [[Square]]
