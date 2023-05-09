@@ -47,7 +47,10 @@ emptyLine = replicate 10 emptySquare
 --retorna se um conjunto de blocos pode ser colocado na matrix.
 canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 canBePut matrix [] = True
-canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable then False else canBePut matrix ts
+canBePut matrix (h : ts)
+  | fst h < 0 || fst h > 9 || snd h < 0 || snd h > 24 = False
+  | getActive(matrix !! (fst h) !! (snd h)) == Disable = False
+  | otherwise = canBePut matrix ts
 
 -- TO TEST
 canMoveTetromino :: [[Square]] -> Move -> Bool
@@ -144,16 +147,18 @@ groundBlocks :: [[Square]] -> [[Square]]
 groundBlocks [] = []
 groundBlocks (x:xs) = map (\(Square color active) -> if active == Enable then Square color Disable else Square color active) x : groundBlocks xs
 
--- P
 getRandomTetromino :: Tetromino
-getRandomTetromino = case randomRIO (0, 6) :: Int of
-    0 -> Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
-    1 -> Tetromino [(0,0),(1,0),(0,1),(0,2)] Orange -- L
-    2 -> Tetromino [(0,0),(1,0),(0,1),(1,1)] Yellow -- O
-    3 -> Tetromino [(0,0),(1,0),(1,1),(1,2)] Green -- S
-    4 -> Tetromino [(0,0),(1,0),(2,0),(1,1)] Violet -- T
-    5 -> Tetromino [(0,0),(1,0),(1,1),(2,1)] Blue -- J
-    6 -> Tetromino [(0,0),(0,1),(1,1),(1,2)] Red -- Z
+getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
+-- P
+--getRandomTetromino :: IO Tetromino
+--getRandomTetromino = case randomRIO (0, 6) of
+--    0 -> Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
+--    1 -> Tetromino [(0,0),(1,0),(0,1),(0,2)] Orange -- L
+--    2 -> Tetromino [(0,0),(1,0),(0,1),(1,1)] Yellow -- O
+--    3 -> Tetromino [(0,0),(1,0),(1,1),(1,2)] Green -- S
+--    4 -> Tetromino [(0,0),(1,0),(2,0),(1,1)] Violet -- T
+ --   5 -> Tetromino [(0,0),(1,0),(1,1),(2,1)] Blue -- J
+--    6 -> Tetromino [(0,0),(0,1),(1,1),(1,2)] Red -- Z
 
 
 -- P
@@ -182,8 +187,8 @@ canBePutWithSideMove matrix positions
 
 -- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
-rotate :: [[Square]] -> [[Square]]
-rotate matrix =
+rotateTetromino :: [[Square]] -> [[Square]]
+rotateTetromino matrix =
   let activeIndexes = findActiveIndexes matrix
       baseDist = baseDistance (findActiveIndexes matrix)
       zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
