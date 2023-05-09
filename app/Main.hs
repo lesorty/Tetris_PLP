@@ -57,7 +57,7 @@ inputToMove (EventKey (Char 's') Down _ _) = MoveDown
 inputToMove (EventKey (SpecialKey KeySpace) Down _ _) = SuperDown
 inputToMove _ = MoveNone
 
--- TO TEST
+-- TO DO
 getHighScore :: Int
 getHighScore = 100
 --getHighScore = do
@@ -68,7 +68,7 @@ getHighScore = 100
 --      return (read contents)
 --    else return 0
 
--- TO TEST
+-- TO DO
 updateHighScore :: Int
 updateHighScore = 200
 --updateHighScore score = do

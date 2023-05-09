@@ -19,7 +19,7 @@ cellHeight = 30.0
 
 
 window :: Display
-window = InWindow "My Game" (1600, 600) (10, 10)
+window = InWindow "My stey" (1000, 600) (10, 10)
 
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color
