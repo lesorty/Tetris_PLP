@@ -151,25 +151,18 @@ groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Ac
 
 -- P
 getRandomTetromino :: Tetromino
-getRandomTetromino = case randomRIO (0, 6) of
-    0 -> [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
-    1 -> [(0,0),(1,0),(0,1),(0,2)] Orange -- L
-    2 -> [(0,0),(1,0),(0,1),(1,1)] Yellow -- O
-    3 -> [(0,0),(1,0),(1,1),(1,2)] Green -- S
-    4 -> [(0,0),(1,0),(2,0),(1,1)] Pink -- T
-    5 -> [(0,0),(1,0),(1,1),(2,1)] Blue -- J
-    6 -> [(0,0),(0,1),(1,1),(1,2)] Red -- Z
+getRandomTetromino = case randomRs (0, 6) (mkStdGen 42) of
+    0 -> ([(0,0),(1,0),(2,0),(3,0)] Cyan) -- I
+    1 -> ([(0,0),(1,0),(0,1),(0,2)] Orange) -- L
+    2 -> ([(0,0),(1,0),(0,1),(1,1)] Yellow) -- O
+    3 -> ([(0,0),(1,0),(1,1),(1,2)] Green) -- S
+    4 -> ([(0,0),(1,0),(2,0),(1,1)] Pink) -- T
+    5 -> ([(0,0),(1,0),(1,1),(2,1)] Blue) -- J
+    6 -> ([(0,0),(0,1),(1,1),(1,2)] Red) -- Z
 
 
 -- P
 -- bota um tetromino aleatório na matrix.
-
--- Aqui embaixo acho q vai haver um problema com a estrutura do codigo no geral, eu n acho
--- q a parte q é responsavel por chamar esse comando dnv deve estar aqui dentro, ja que ele (presumo)
--- n é responsavel por checar se a peça ja foi encaixada. A discutir
--- PS eu provavelmente me atrapalhei com os numeros mas isso pode ser concertado rapidamente.
--- So mandar msg.
-
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
