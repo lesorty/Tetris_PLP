@@ -68,7 +68,7 @@ executable Tetris-PLP
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends: base ^>=4.16.4.0, gloss ^>=1.13.2.2
+    build-depends: base ^>=4.16.4.0, gloss ^>=1.13.2.2, random
 
 
     -- Directories containing source files.
