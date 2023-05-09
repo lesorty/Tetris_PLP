@@ -4,8 +4,8 @@ import Graphics.Gloss
 import MatrixController
 
 -- showGrid, desenha o grid completo na tela, com divisórias
-showGrid :: Int -> [String] -> Picture
-showGrid score g =
+showGrid :: [[Square]] -> Int -> Picture
+showGrid g score =
   let cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
       scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
    in pictures [scoreBox, pictures cells]
@@ -17,17 +17,22 @@ cellWidth = 30.0
 cellHeight :: Float
 cellHeight = 30.0
 
+
+window :: Display
+window = InWindow "My Game" (1600, 600) (10, 10)
+
 -- Define as cores de cada caractere
-colorForChar :: Char -> Color
-colorForChar c = case c of
-  'a' -> makeColorI 41 178 178 255 -- ciano
-  'b' -> makeColorI 0 94 94 255 -- azul escuro
-  'c' -> makeColorI 255 102 0 255 -- laranja
-  'd' -> makeColorI 255 255 0 255 -- amarelo
-  'e' -> makeColorI 0 179 89 255 -- verde
-  'f' -> makeColorI 178 41 163 255 -- roxo
-  'g' -> makeColorI 255 51 51 255 -- vermelho
-  _ -> makeColorI 217 217 217 255 -- cor do fundo
+colorForSquare :: Square -> Color
+colorForSquare square
+  | blockColor == Cyan = makeColorI 41 178 178 255 -- ciano
+  | blockColor == Blue = makeColorI 0 94 94 255 -- azul escuro
+  | blockColor == Orange = makeColorI 255 102 0 255 -- laranja
+  | blockColor == Yellow = makeColorI 255 255 0 255 -- amarelo
+  | blockColor == Green = makeColorI 0 179 89 255 -- verde
+  | blockColor == Violet = makeColorI 178 41 163 255 -- roxo
+  | blockColor == Red = makeColorI 255 51 51 255 -- vermelho
+  | otherwise = makeColorI 217 217 217 255 -- cor do fundo
+  where blockColor = getColor square
 
 -- Define o array de strings predefinido
 grid :: [String]
@@ -41,9 +46,9 @@ cellToScreen (x, y) =
    in (x', y')
 
 -- Desenha uma célula na tela, com divisórias
-drawCell :: (Int, Int) -> Char -> Picture
-drawCell (x, y) c =
-  let col = colorForChar c
+drawCell :: (Int, Int) -> Square -> Picture
+drawCell (x, y) sq =
+  let col = colorForSquare sq
       pos = cellToScreen (x, y)
       cell = rectangleSolid cellWidth cellHeight
       -- Adiciona as divisórias da célula
@@ -61,8 +66,8 @@ showPreviousHighscore x =
     translate (150) (-150) $ color yellow $ scale 0.2 0.2 $ text (show x)
   ]
 
-showGameOver :: Int -> Int -> IO ()
-showGameOver pontosAtual highScore = display FullScreen black (pictures [
+showGameOver :: Int -> Int -> Picture
+showGameOver pontosAtual highScore = pictures [
       translate (-210) 0 $ color red $ scale 0.5 0.5 $ text "Game Over! :(",
       translate (-200) (-50) $ color white $ scale 0.25 0.25 $ text "pressione ESC para sair",
       translate (-200) (-100) $ color white $ scale 0.2 0.2 $ text ("A sua pontuacao foi de: "),
@@ -71,4 +76,4 @@ showGameOver pontosAtual highScore = display FullScreen black (pictures [
         translate (-175) (-150) $ color green $ scale 0.2 0.2 $ text "Isso eh um novo highscore!!"
       else
         showPreviousHighscore highScore
-  ])
+  ]
