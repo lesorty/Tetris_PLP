@@ -4,8 +4,8 @@ import Graphics.Gloss
 import MatrixController
 
 -- showGrid, desenha o grid completo na tela, com divisórias
-showGrid :: Int -> [String] -> Picture
-showGrid score g =
+showGrid :: [String] -> Int -> Picture
+showGrid g score =
   let cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
       scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
    in pictures [scoreBox, pictures cells]
@@ -18,16 +18,17 @@ cellHeight :: Float
 cellHeight = 30.0
 
 -- Define as cores de cada caractere
-colorForChar :: Char -> Color
-colorForChar c = case c of
-  'a' -> makeColorI 41 178 178 255 -- ciano
-  'b' -> makeColorI 0 94 94 255 -- azul escuro
-  'c' -> makeColorI 255 102 0 255 -- laranja
-  'd' -> makeColorI 255 255 0 255 -- amarelo
-  'e' -> makeColorI 0 179 89 255 -- verde
-  'f' -> makeColorI 178 41 163 255 -- roxo
-  'g' -> makeColorI 255 51 51 255 -- vermelho
-  _ -> makeColorI 217 217 217 255 -- cor do fundo
+colorForSquare :: Square -> Color
+colorForSquare square
+  | blockColor == Cyan = makeColorI 41 178 178 255 -- ciano
+  | blockColor == Blue = makeColorI 0 94 94 255 -- azul escuro
+  | blockColor == Orange = makeColorI 255 102 0 255 -- laranja
+  | blockColor == Yellow = makeColorI 255 255 0 255 -- amarelo
+  | blockColor == Green = makeColorI 0 179 89 255 -- verde
+  | blockColor == Purple = makeColorI 178 41 163 255 -- roxo
+  | blockColor == Red = makeColorI 255 51 51 255 -- vermelho
+  | otherwise = makeColorI 217 217 217 255 -- cor do fundo
+  where blockColor = getColor square
 
 -- Define o array de strings predefinido
 grid :: [String]
@@ -41,9 +42,9 @@ cellToScreen (x, y) =
    in (x', y')
 
 -- Desenha uma célula na tela, com divisórias
-drawCell :: (Int, Int) -> Char -> Picture
-drawCell (x, y) c =
-  let col = colorForChar c
+drawCell :: (Int, Int) -> Square -> Picture
+drawCell (x, y) sq =
+  let col = colorForChar sq
       pos = cellToScreen (x, y)
       cell = rectangleSolid cellWidth cellHeight
       -- Adiciona as divisórias da célula

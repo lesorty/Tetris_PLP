@@ -1,20 +1,22 @@
 module MatrixController where
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
-data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
 data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
 data Active = Enable | Disable | None deriving Eq
-data Square = Square Color Falling deriving Eq
-data Tetromino = Tetromino [(Int,Int)] Color deriving Eq
+data Square = Square BlockColor Falling deriving Eq
+data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
 
-getColor :: Square -> Color
+getColor :: Square -> BlockColor
 getColor (Square color _) = color
 
 getActive :: Square -> Active
 getActive (Square _ active) = active
 
-getActiveColor :: [[Square]] -> Color
-getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat grid)))
+getActiveColor :: [[Square]] -> BlockColor
+getActiveColor matrix = 
+  where firstActive = head (findActiveIndexes matrix)
+        firstActiveColor = getColor (matrix !! (snd firstActive) !! (fst firstActive))
 
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
@@ -22,7 +24,7 @@ emptyMatrix = replicate 25 emptyLine
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
 
-getTetrominoColor :: Tetromino -> String
+getTetrominoColor :: Tetromino -> BlockColor
 getTetrominoBlocks (Tetromino _ color) = color
 
 -- TO TEST
@@ -35,7 +37,7 @@ findActiveIndexes s matrix = do
 
 emptyLine :: [Square]
 emptyLine = replicate 10 emptySquare
-    where emptySquare = Square (Color Black) (Active None)
+    where emptySquare = Square Black None
 
 ------------ PIECE PERMISSION LOGIC ------------
 
@@ -67,7 +69,7 @@ updateMatrixElement matrix (i, j) newValue =
 removeActiveBlocks :: [[Square]] -> [[Square]]
 removeActiveBlocks [] = []
 removeActiveBlocks (x:xs) =
-    map ((Square Color Active) -> if Active == Enable then Square Black None else Square Color Active) x : removeActiveBlocks xs
+    map ((Square color active) -> if active == Enable then Square Black None else Square color active) x : removeActiveBlocks xs
 
 -- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
@@ -127,11 +129,16 @@ canClearLine line = all (\k -> getActive k == (Active Disable)) line
 -- TO TEST
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
 clearMatrix :: [[Square]] -> ([[Square]], Int)
-clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remainderLines) emptyLine), (25 - length remainderLines))
-    where remainderLines = filter (\k -> canClearLine k) matrix
+clearTheseLines matrix lines = ((clearable ++ replicate (25 - clearable) emptyLine), (25 - clearable))
+where clearable = clearableCount matrix
 
+-- TO TEST
+clearableCount :: [[Square]] -> Int
+clearableCount matrix = length (filter (\k -> canClearLine k) matrix)
 
-
+-- TO TEST
+goToNextCycle :: [[Square]] -> [[Square]]
+goToNextCycle matrix = putRandomTetromino . clearMatrix . groundBlocks matrix
 
 
 ------------ GAME LOGIC ------------
@@ -140,7 +147,7 @@ clearTheseLines matrix lines = ((remainderLines ++ replicate (25 - length remain
 -- TO TEST
 --retorna true se tem algum bloco acima do limite da matrix, false caso contrário
 isGameOver :: [[Square]] -> Bool
-isGameOver matrix = not (all (\k -> getColor k == (Color Black)) (concat matrixTop))
+isGameOver matrix = not (all (\k -> getColor k == Black) (concat matrixTop))
     where matrixTop = drop 20 matrix
 
 -- TO TEST
