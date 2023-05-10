@@ -1,8 +1,7 @@
 module MatrixController where
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
-data Color = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
-data Piece = LeftL | RightL | Square | Rectangule | LeftS | RigthS | T deriving Eq
+data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
 data Active = Enable | Disable | None deriving Eq
 data Square = Square Color Falling deriving Eq
 data Tetromino = Tetromino [(Int,Int)] Color deriving Eq
@@ -19,6 +18,13 @@ getActiveColor grid = head (filter (/= Empty) (map (\x -> getColor x) (concat gr
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
 
+--uses emptyMatrix
+bottomLeftFilledMatrix :: [[Square]]
+bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Enable)
+
+topLeftFilledMatrix :: [[Square]]
+topLeftFilledMatrix = updateMatrixElement emptyMatrix (2,19) (Square Cyan Enable)
+
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
 
@@ -31,7 +37,7 @@ findActiveIndexes s matrix = do
 -- iterate by the rows and columns to get the i and j of the elements
   (i, row) <- zip [0..] matrix
   (j, elem) <- zip [0..] row
-  if elem == Enable then return (i, j) else []
+  if (getActive elem) == Enable then return (j, i) else []
 
 emptyLine :: [Square]
 emptyLine = replicate 10 emptySquare
@@ -42,8 +48,11 @@ emptyLine = replicate 10 emptySquare
 -- TO TEST
 --retorna se um conjunto de blocos pode ser colocado na matrix.
 canBePut :: [[Square]] -> [(Int, Int)] -> Bool
-canBePut matrix [] = true
-canBePut matrix (h : ts) = if getActive(matrix !! (fst h) !! (snd h)) == Disable then False else canBePut matrix ts
+canBePut matrix [] = True
+canBePut matrix (h : ts)
+  | fst h < 0 || fst h > 9 || snd h < 0 || snd h > 24 = False
+  | getActive(matrix !! (snd h) !! (fst h)) == Disable = False
+  | otherwise = canBePut matrix ts
 
 -- TO TEST
 canMoveTetromino :: [[Square]] -> Move -> Bool
@@ -57,7 +66,7 @@ canMoveTetromino matrix move = canBePut matrix (getEndPos matrix move)
 
 -- magia.
 updateMatrixElement :: [[Square]] -> (Int, Int) -> Square -> [[Square]]
-updateMatrixElement matrix (i, j) newValue =
+updateMatrixElement matrix (j, i) newValue =
   take i matrix ++
   [take j (matrix !! i) ++ [newValue] ++ drop (j + 1) (matrix !! i)] ++
   drop (i + 1) matrix
@@ -71,16 +80,16 @@ removeActiveBlocks (x:xs) =
 
 -- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
-addBlocks matrix square [] = [] 
+addBlocks matrix square [] = matrix
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
     where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
 -- TO TEST
 getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
-  | move == (Move MoveLeft) = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
-  | move == (Move MoveRight) = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == (Move MoveDown) = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == MoveLeft = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
+  | move == MoveRight = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
+  | move == MoveDown = map (\k -> (fst k, (snd k)-1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -173,9 +182,8 @@ getRandomTetromino = case (randomRs (0, 6) (mkStdGen 42)) of
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-where newTetronimo = getRandomTetromino
-putRandomTetromino x = addBlocks matrix (Square (getTetrominoColor newTetronimo)) (getTetrominoBlocks newTetronimo)
-
+putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
+  where newTetronimo = getRandomTetromino
 
 ------------ PIECE ROTATION LOGIC ------------
 
@@ -188,15 +196,19 @@ canBePutWithSideMove matrix positions
 
 -- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
-rotate :: [[Square]] -> [[Square]]
-rotate matrix =
+-- TO TEST
+-- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
+rotateTetromino :: [[Square]] -> [[Square]]
+rotateTetromino matrix =
   let activeIndexes = findActiveIndexes matrix
-  let baseDist = baseDistance matrix
-  let zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
-  let rotatedZeroed = rotatePoints zeroedIndexes
-  let returnedToPos = addTuples rotatedZeroed baseDist
-  let enclosed = encloseCoords returnedToPos
-rotate matrix = raiseUntilAllowed matrix enclosed
+      baseDist = baseDistance (findActiveIndexes matrix)
+      zeroedIndexes = map (\x -> subtractTuples x baseDist) activeIndexes
+      rotatedZeroed = rotatePoints zeroedIndexes
+      returnedToPos = map (\x -> addTuples x baseDist) rotatedZeroed
+      enclosed = encloseCoords returnedToPos
+      finalPos = raiseUntilAllowed matrix enclosed
+    in changeActiveBlocksPos matrix finalPos
+
 
 -- TO TEST
 -- pega um conjunto de pontos na matrix. retorna, dentre os pontos mais baixos, o mais à esquerda
@@ -224,12 +236,12 @@ rotatePoints cloud = map (\x -> (snd x, -(fst x))) cloud
 
 
 -- TO TEST
---pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então bota elas na matriz
-raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [[Square]]
+--pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então retorna as novas coordenadas
+raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [(Int, Int)]
 raiseUntilAllowed matrix coords 
-  | canBePut matrix coords = changeActiveBlocksPos matrix coords
-  | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
-  | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
+  | canBePut matrix coords = coords
+  | canBePutWithSideMove matrix coords == 1 = map (\k -> (((fst k) - 1), (snd k))) coords
+  | canBePutWithSideMove matrix coords == 2 = map (\k -> (((fst k) + 1), (snd k))) coords
   | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
 
 encloseCoords :: [(Int, Int)] -> [(Int, Int)]
@@ -238,8 +250,9 @@ encloseCoords coords = newCoords
     minX = min (map (\k -> fst k) coords)
     maxX = max (map (\k -> fst k) coords)
     newCoords
-    | minX < 0 = map (\k -> ((fst k) - minX, snd k) coords)
-    | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k) coords)
-    | otherwise = coords
+      | minX < 0 = map (\k -> ((fst k) - minX, snd k)) coords
+      | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k)) coords
+      | otherwise = coords
+
   
 

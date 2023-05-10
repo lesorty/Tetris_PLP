@@ -1,7 +1,10 @@
 module Main where
+<<<<<<< HEAD
 import System.IO
 import System.Directory
 import Control.Concurrent
+=======
+>>>>>>> master
 import Screen
 import MatrixController
 import Graphics.Gloss
@@ -14,20 +17,22 @@ data GameState = GameState {
     }
 
 newGameState :: GameState
-newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
+--newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
+newGameState = GameState { matrix = topLeftFilledMatrix, timeSinceLastDrop = 0, score = 0 }
+
 
 -- TO TEST
 highScoreFile :: FilePath
 highScoreFile = "highscore.txt"
 
 applyMove :: [[Square]] -> Move -> [[Square]]
-applyMove matrix move
-    | move == MoveLeft = if canMoveTetromino matrix MoveLeft then moveTetromino matrix MoveLeft else matrix
-    | move == MoveRight = if canMoveTetromino matrix MoveRight then moveTetromino matrix MoveRight else matrix
-    | move == MoveDown = if canMoveTetromino matrix MoveDown then moveTetromino matrix MoveDown else matrix
-    | move == MoveRotate = rotateTetromino matrix
-    | move == SuperDown = fullFall matrix
-    | otherwise = matrix
+applyMove grid move
+    | move == MoveLeft = if canMoveTetromino grid MoveLeft then moveTetromino grid MoveLeft else grid
+    | move == MoveRight = if canMoveTetromino grid MoveRight then moveTetromino grid MoveRight else grid
+    | move == MoveDown = if canMoveTetromino grid MoveDown then moveTetromino grid MoveDown else grid
+    | move == MoveRotate = rotateTetromino grid
+    | move == SuperDown = fullFall grid
+    | otherwise = grid
 
 -- TO TEST
 nextBoardState :: Event -> GameState -> GameState
@@ -47,9 +52,15 @@ progressTime deltaTime gameState = GameState { matrix = newMatrix, timeSinceLast
     forceFall = (timeSinceLastDrop gameState + deltaTime) > 1
     newTime = if forceFall then 0 else (timeSinceLastDrop gameState + deltaTime)
     newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
+    --newMatrix = if forceFall then applyMove (matrix gameState) MoveRight else matrix gameState
+    --newMatrix = if forceFall then emptyMatrix else matrix gameState
+
     newScore = if forceFall then (score (nextBoardState (EventKey (Char 's') Down a b) gameState)) else (score gameState)
     a = (Modifiers Down Up Down)
     b = (0,0)
+
+--progressTime deltaTime gameState = gameState
+
 inputToMove :: Event -> Move
 inputToMove (EventKey (Char 'a') Down _ _) = MoveLeft
 inputToMove (EventKey (Char 'd') Down _ _) = MoveRight
@@ -79,7 +90,6 @@ inputToMove _ = MoveNone
 showGameState :: GameState -> Picture
 showGameState gameState
   | isGameOver (matrix gameState) = showGameOver (score gameState) getHighScore
-  | otherwise = showGrid (take 20 (matrix gameState)) (score gameState)
-
+  | otherwise = showGrid (matrix gameState) (score gameState)
 main :: IO ()
 main = play window black 30 newGameState showGameState nextBoardState progressTime
