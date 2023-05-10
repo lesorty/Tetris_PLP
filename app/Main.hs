@@ -12,7 +12,7 @@ data GameState = GameState {
 
 newGameState :: GameState
 --newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
-newGameState = GameState { matrix = bottomLeftFilledMatrix, timeSinceLastDrop = 0, score = 0 }
+newGameState = GameState { matrix = topLeftFilledMatrix, timeSinceLastDrop = 0, score = 0 }
 
 
 -- TO TEST
@@ -45,9 +45,9 @@ progressTime deltaTime gameState = GameState { matrix = newMatrix, timeSinceLast
   where
     forceFall = (timeSinceLastDrop gameState + deltaTime) > 1
     newTime = if forceFall then 0 else (timeSinceLastDrop gameState + deltaTime)
-    --newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
+    newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
     --newMatrix = if forceFall then applyMove (matrix gameState) MoveRight else matrix gameState
-    newMatrix = if forceFall then emptyMatrix else matrix gameState
+    --newMatrix = if forceFall then emptyMatrix else matrix gameState
 
     newScore = if forceFall then (score (nextBoardState (EventKey (Char 's') Down a b) gameState)) else (score gameState)
     a = (Modifiers Down Up Down)
