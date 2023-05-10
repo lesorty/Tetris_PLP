@@ -4,7 +4,7 @@ import Data.List (minimumBy)
 import System.Random (randomRIO)
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
-data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
 data Active = Enable | Disable | None deriving Eq
 data Square = Square BlockColor Active deriving Eq
 data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
@@ -25,7 +25,10 @@ emptyMatrix = replicate 25 emptyLine
 
 --uses emptyMatrix
 bottomLeftFilledMatrix :: [[Square]]
-bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Disable)
+bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Enable)
+
+topLeftFilledMatrix :: [[Square]]
+topLeftFilledMatrix = updateMatrixElement emptyMatrix (2,19) (Square Cyan Enable)
 
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
@@ -68,7 +71,7 @@ canMoveTetromino matrix move = canBePut matrix (getEndPos matrix move)
 
 -- magia.
 updateMatrixElement :: [[Square]] -> (Int, Int) -> Square -> [[Square]]
-updateMatrixElement matrix (i, j) newValue =
+updateMatrixElement matrix (j, i) newValue =
   take i matrix ++
   [take j (matrix !! i) ++ [newValue] ++ drop (j + 1) (matrix !! i)] ++
   drop (i + 1) matrix
@@ -82,7 +85,7 @@ removeActiveBlocks (x:xs) =
 
 -- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
-addBlocks matrix square [] = [] 
+addBlocks matrix square [] = matrix
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
     where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
