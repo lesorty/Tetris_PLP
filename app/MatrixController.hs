@@ -180,7 +180,7 @@ getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-putRandomTetromino matrix = raiseUntilAllowed matrix (Square (getTetrominoColor newTetronimo) Enable) (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo))
+putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
   where newTetronimo = getRandomTetromino
 
 ------------ PIECE ROTATION LOGIC ------------
@@ -194,6 +194,8 @@ canBePutWithSideMove matrix positions
 
 -- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
+-- TO TEST
+-- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
 rotateTetromino :: [[Square]] -> [[Square]]
 rotateTetromino matrix =
   let activeIndexes = findActiveIndexes matrix
@@ -202,7 +204,8 @@ rotateTetromino matrix =
       rotatedZeroed = rotatePoints zeroedIndexes
       returnedToPos = map (\x -> addTuples x baseDist) rotatedZeroed
       enclosed = encloseCoords returnedToPos
-  in raiseUntilAllowed matrix enclosed
+      finalPos = raiseUntilAllowed matrix enclosed
+    in changeActiveBlocksPos matrix finalPos
 
 
 -- TO TEST
@@ -232,12 +235,12 @@ rotatePoints cloud = map (\x -> (snd x, -(fst x))) cloud
 
 
 -- TO TEST
---pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então bota elas na matriz
-raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [[Square]]
+--pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então retorna as novas coordenadas
+raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [(Int, Int)]
 raiseUntilAllowed matrix coords 
-  | canBePut matrix coords = changeActiveBlocksPos matrix coords
-  | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
-  | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
+  | canBePut matrix coords = coords
+  | canBePutWithSideMove matrix coords == 1 = map (\k -> (((fst k) - 1), (snd k))) coords
+  | canBePutWithSideMove matrix coords == 2 = map (\k -> (((fst k) + 1), (snd k))) coords
   | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
 
 encloseCoords :: [(Int, Int)] -> [(Int, Int)]
@@ -250,5 +253,9 @@ encloseCoords coords = newCoords
       | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k)) coords
       | otherwise = coords
 
-  
-
+-- getRandomElement :: [a] -> Maybe a
+-- getRandomElement [] = Nothing
+-- getRandomElement xs = Just $ xs !! index
+--   where
+--     (lo, hi) = (0, length xs - 1)
+--     index = fst $ randomR (lo, hi) (mkStdGen 42) -- Using a fixed seed for reproducibility
