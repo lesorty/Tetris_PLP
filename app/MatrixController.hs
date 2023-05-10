@@ -151,7 +151,7 @@ groundBlocks (x:xs) = map (\Square color active ->Square color (if active == (Ac
 
 -- P
 getRandomTetromino :: Tetromino
-getRandomTetromino = case randomRs (0, 6) (mkStdGen 42) of
+getRandomTetromino = case (randomRs (0, 6) (mkStdGen 42)) of
     0 -> ( [(0,0),(1,0),(2,0),(3,0)] Cyan ) -- I
     1 -> ( [(0,0),(1,0),(0,1),(0,2)] Orange ) -- L
     2 -> ( [(0,0),(1,0),(0,1),(1,1)] Yellow ) -- O

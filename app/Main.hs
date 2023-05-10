@@ -59,19 +59,19 @@ inputToMove (EventKey (SpecialKey KeySpace) Down _ _) = SuperDown
 inputToMove _ = MoveNone
 
 -- TO TEST
-getHighScore :: Int
-getHighScore = 100
+--etHighScore :: Int
+--getHighScore = 100
 --getHighScore = do
 -- fileExists <- doesFileExist highScoreFile
 --  if fileExists
 --    then withFile highScoreFile ReadMode $ \handle -> do
 --      contents <- hGetContents handle
 --      return (read contents)
---    else return 0
+--   else return 0
 
 -- TO TEST
-updateHighScore :: Int
-updateHighScore = 200
+--updateHighScore :: Int
+--updateHighScore = 200
 --updateHighScore score = do
 --  withFile highScoreFile WriteMode $ \handle -> do
 --    hPrint handle score
