@@ -7,7 +7,7 @@ import System.IO.Unsafe (unsafePerformIO)
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
 data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
-data Active = Enable | Disable | None deriving Eq
+data Active = Prediction | Enable | Disable | None deriving Eq
 data Square = Square BlockColor Active deriving Eq
 data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
 
@@ -39,8 +39,8 @@ getActive (Square _ active) = active
 
 getActiveColor :: [[Square]] -> BlockColor
 getActiveColor matrix = firstActiveColor
-  where firstActive = head (findActiveIndexes matrix)
-        firstActiveColor = getColor (matrix !! (snd firstActive) !! (fst firstActive))
+  where firstActive = if length (findActiveIndexes matrix) > 0 then head (findActiveIndexes matrix) else (-1, -1)
+        firstActiveColor = if firstActive == (-1, -1) then Black else getColor (matrix !! (snd firstActive) !! (fst firstActive))
 
 emptyLine :: [Square]
 emptyLine = replicate 10 emptySquare
@@ -114,11 +114,16 @@ removeActiveBlocks [] = []
 removeActiveBlocks (x:xs) =
     map (\(Square color active) -> if active == Enable then Square Black None else Square color active) x : removeActiveBlocks xs
 
+removePrediction :: [[Square]] -> [[Square]]
+removePrediction [] = []
+removePrediction (x:xs) =
+    map (\(Square color active) -> if active == Prediction then Square Black None else Square color active) x : removePrediction xs
+
 -- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
 addBlocks matrix square [] = matrix
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
-    where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
+    where updatedMatrix = if getActive (matrix !! snd x !! fst x) /= Enable then updateMatrixElement matrix ((fst x), (snd x)) square else matrix
 
 -- TO TEST
 getEndPos :: [[Square]] -> Move -> [(Int, Int)]
@@ -141,12 +146,20 @@ moveTetromino :: [[Square]] -> Move -> [[Square]]
 moveTetromino matrix move = changeActiveBlocksPos matrix endPos
     where endPos = getEndPos matrix move
 
+getPredictionCoords :: [[Square]] -> [(Int, Int)]
+getPredictionCoords matrix = 
+    if canMoveTetromino matrix MoveDown then getPredictionCoords (moveTetromino matrix MoveDown)
+    else findActiveIndexes matrix
+
+updatePrediction :: [[Square]] -> [[Square]]
+updatePrediction matrix = addBlocks (removePrediction matrix) (Square (getActiveColor matrix) Prediction) (getPredictionCoords matrix)
 
 -- TO TEST
 fullFall :: [[Square]] -> [[Square]]
 fullFall matrix = 
     if canMoveTetromino matrix MoveDown then fullFall (moveTetromino matrix MoveDown)
     else matrix
+
 
 ------------ CLEAR MATRIX LOGIC ------------
 
