@@ -8,7 +8,7 @@ showGrid :: [[Square]] -> Int -> Picture
 showGrid matrix score =
   let g = take 20 matrix
       cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
-      scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
+      scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color white $ text $ "Score: " ++ show score
    in pictures [scoreBox, pictures cells]
 
 -- Define a largura e a altura de cada célula do grid
@@ -20,7 +20,7 @@ cellHeight = 30.0
 
 
 window :: Display
-window = InWindow "My Game" (400, 800) (10, 10)
+window = InWindow "My Game" (550, 800) (10, 10)
 
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color

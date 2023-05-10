@@ -40,7 +40,7 @@ nextBoardState event gameState
       cycleEnd = (move == MoveDown && not (canMoveTetromino oldMatrix MoveDown)) || (move == SuperDown)
       postMoveMatrix = applyMove oldMatrix move
       newTime = timeSinceLastDrop gameState
-      newScore = if cycleEnd then (score gameState) + clearableCount postMoveMatrix else (score gameState)
+      newScore = if cycleEnd then (score gameState) + pointsForClear (clearableCount postMoveMatrix) else (score gameState)
       newMatrix = if cycleEnd then goToNextCycle postMoveMatrix else postMoveMatrix
 
 progressTime :: Float -> GameState -> GameState 
@@ -58,6 +58,13 @@ progressTime deltaTime gameState
         newScore = if forceFall then (score (nextBoardState (EventKey (Char 's') Down a b) gameState)) else (score gameState)
         a = (Modifiers Down Up Down)
         b = (0,0)
+
+pointsForClear :: Int -> Int
+pointsForClear 1 = 100
+pointsForClear 2 = 250
+pointsForClear 3 = 500
+pointsForClear 4 = 1000
+pointsForClear _ = 0
 
 --progressTime deltaTime gameState = gameState
 
