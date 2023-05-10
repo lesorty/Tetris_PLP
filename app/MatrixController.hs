@@ -20,8 +20,18 @@ getActiveColor matrix = firstActiveColor
   where firstActive = head (findActiveIndexes matrix)
         firstActiveColor = getColor (matrix !! (snd firstActive) !! (fst firstActive))
 
+emptyLine :: [Square]
+emptyLine = replicate 10 emptySquare
+    where emptySquare = Square Black None
+  
+fullLine :: [Square]
+fullLine = replicate 10 (Square Yellow Disable)
+
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
+
+fullBaseMatrix :: [[Square]]
+fullBaseMatrix = fullLine : (replicate 24 emptyLine)
 
 --uses emptyMatrix
 bottomLeftFilledMatrix :: [[Square]]
@@ -29,6 +39,9 @@ bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Enab
 
 topLeftFilledMatrix :: [[Square]]
 topLeftFilledMatrix = updateMatrixElement emptyMatrix (2,19) (Square Cyan Enable)
+
+almostFullBaseMatrix :: [[Square]]
+almostFullBaseMatrix = updateMatrixElement (updateMatrixElement fullBaseMatrix (0,0) (Square Black None)) (0,0) (Square Cyan Enable)
 
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
@@ -43,10 +56,6 @@ findActiveIndexes matrix = do
   (i, row) <- zip [0..] matrix
   (j, elem) <- zip [0..] row
   if (getActive elem) == Enable then return (j, i) else []
-
-emptyLine :: [Square]
-emptyLine = replicate 10 emptySquare
-    where emptySquare = Square Black None
 
 ------------ PIECE PERMISSION LOGIC ------------
 
@@ -122,7 +131,7 @@ fullFall matrix =
 -- TO TEST
 -- pega uma matriz e um índice. retorna se essa linha é clearável ou não
 canClearLine :: [Square] -> Bool
-canClearLine line = all (\k -> getActive k == Disable) line
+canClearLine line = all (\k -> getActive k /= None) line
 
 -- TO TEST
 -- pega uma matriz e uma lista de índices. retorna uma matriz com todos esses índices clearados
