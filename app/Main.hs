@@ -8,12 +8,13 @@ data GameState = GameState {
     matrix :: [[Square]],
     timeSinceLastDrop :: Float,
     score :: Int,
+    droppedPieces :: Int,
     gameRunning :: Bool
     }
 
 newGameState :: GameState
 --newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
-newGameState = GameState { matrix = (putRandomTetromino emptyMatrix 0), timeSinceLastDrop = 0, score = 0, gameRunning = True }
+newGameState = GameState { matrix = updatePrediction (putRandomTetromino emptyMatrix 0), timeSinceLastDrop = 0, score = 0, droppedPieces = 0, gameRunning = True }
 
 
 -- TO TEST
@@ -33,7 +34,7 @@ applyMove grid move
 nextBoardState :: Event -> GameState -> GameState
 nextBoardState event gameState
   | gameRunning gameState == False = gameState
-  | otherwise = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore, gameRunning = True}
+  | otherwise = GameState { matrix = updatePrediction newMatrix, timeSinceLastDrop = newTime, score = newScore, droppedPieces = newDroppedPieces, gameRunning = True}
     where
       move = inputToMove event
       oldMatrix = matrix gameState
@@ -42,15 +43,16 @@ nextBoardState event gameState
       newTime = timeSinceLastDrop gameState
       newScore = if cycleEnd then (score gameState) + pointsForClear (clearableCount postMoveMatrix) else (score gameState)
       newMatrix = if cycleEnd then (goToNextCycle postMoveMatrix seed) else postMoveMatrix
+      newDroppedPieces = if cycleEnd then (droppedPieces gameState) + 1 else (droppedPieces gameState)
       seed = ((veryRandom (concat (matrix gameState)) 0) * (round (100.0 * (timeSinceLastDrop gameState)))) `mod` 120189
 
 progressTime :: Float -> GameState -> GameState 
 progressTime deltaTime gameState
     | gameRunning gameState == False = gameState
-    | isGameOver (matrix gameState) = GameState { matrix = matrix gameState, timeSinceLastDrop = timeSinceLastDrop gameState, score = score gameState, gameRunning = False }
-    | otherwise = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore, gameRunning = True}
+    | isGameOver (matrix gameState) = GameState { matrix = matrix gameState, timeSinceLastDrop = timeSinceLastDrop gameState, score = score gameState, droppedPieces = droppedPieces gameState, gameRunning = False }
+    | otherwise = GameState { matrix = updatePrediction newMatrix, timeSinceLastDrop = newTime, score = newScore, droppedPieces = droppedPieces gameState, gameRunning = True}
       where
-        forceFall = (timeSinceLastDrop gameState + deltaTime) > 1
+        forceFall = (timeSinceLastDrop gameState + deltaTime) > (droppedPiecesToDelay (droppedPieces gameState))
         newTime = if forceFall then 0 else (timeSinceLastDrop gameState + deltaTime)
         newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
         --newMatrix = if forceFall then applyMove (matrix gameState) MoveRight else matrix gameState
@@ -66,6 +68,11 @@ pointsForClear 2 = 250
 pointsForClear 3 = 500
 pointsForClear 4 = 1000
 pointsForClear _ = 0
+
+droppedPiecesToDelay :: Int -> Float
+droppedPiecesToDelay dropped 
+  | dropped > 35 = 0.3
+  | otherwise = 1.0 - (fromIntegral dropped) / 50.0
 
 --progressTime deltaTime gameState = gameState
 
