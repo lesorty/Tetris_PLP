@@ -13,7 +13,7 @@ data GameState = GameState {
 
 newGameState :: GameState
 --newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
-newGameState = GameState { matrix = topLeftFilledMatrix, timeSinceLastDrop = 0, score = 0, gameRunning = True }
+newGameState = GameState { matrix = (putRandomTetromino emptyMatrix 0), timeSinceLastDrop = 0, score = 0, gameRunning = True }
 
 
 -- TO TEST
@@ -41,7 +41,8 @@ nextBoardState event gameState
       postMoveMatrix = applyMove oldMatrix move
       newTime = timeSinceLastDrop gameState
       newScore = if cycleEnd then (score gameState) + pointsForClear (clearableCount postMoveMatrix) else (score gameState)
-      newMatrix = if cycleEnd then goToNextCycle postMoveMatrix else postMoveMatrix
+      newMatrix = if cycleEnd then (goToNextCycle postMoveMatrix seed) else postMoveMatrix
+      seed = ((veryRandom (concat (matrix gameState)) 0) * (round (100.0 * (timeSinceLastDrop gameState)))) `mod` 120189
 
 progressTime :: Float -> GameState -> GameState 
 progressTime deltaTime gameState
@@ -99,4 +100,5 @@ showGameState gameState
   | gameRunning gameState == False = showGameOver (score gameState) getHighScore
   | otherwise = showGrid (matrix gameState) (score gameState)
 main :: IO ()
-main = play window black 30 newGameState showGameState nextBoardState progressTime
+main = play window backgroundColor 120 newGameState showGameState nextBoardState progressTime
+  where backgroundColor = makeColorI 40 40 40 255
