@@ -7,12 +7,13 @@ import Graphics.Gloss.Interface.Pure.Game
 data GameState = GameState {
     matrix :: [[Square]],
     timeSinceLastDrop :: Float,
-    score :: Int
+    score :: Int,
+    gameRunning :: Bool
     }
 
 newGameState :: GameState
 --newGameState = GameState { matrix = putRandomTetromino emptyMatrix, timeSinceLastDrop = 0, score = 0 }
-newGameState = GameState { matrix = topLeftFilledMatrix, timeSinceLastDrop = 0, score = 0 }
+newGameState = GameState { matrix = topLeftFilledMatrix, timeSinceLastDrop = 0, score = 0, gameRunning = True }
 
 
 -- TO TEST
@@ -30,28 +31,33 @@ applyMove grid move
 
 -- TO TEST
 nextBoardState :: Event -> GameState -> GameState
-nextBoardState event gameState = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore }
-  where
-    move = inputToMove event
-    oldMatrix = matrix gameState
-    cycleEnd = (move == MoveDown && not (canMoveTetromino oldMatrix MoveDown)) || (move == SuperDown)
-    postMoveMatrix = applyMove oldMatrix move
-    newTime = timeSinceLastDrop gameState
-    newScore = if cycleEnd then (score gameState) + clearableCount postMoveMatrix else (score gameState)
-    newMatrix = if cycleEnd then goToNextCycle postMoveMatrix else postMoveMatrix
+nextBoardState event gameState
+  | gameRunning gameState == False = gameState
+  | otherwise = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore, gameRunning = True}
+    where
+      move = inputToMove event
+      oldMatrix = matrix gameState
+      cycleEnd = (move == MoveDown && not (canMoveTetromino oldMatrix MoveDown)) || (move == SuperDown)
+      postMoveMatrix = applyMove oldMatrix move
+      newTime = timeSinceLastDrop gameState
+      newScore = if cycleEnd then (score gameState) + clearableCount postMoveMatrix else (score gameState)
+      newMatrix = if cycleEnd then goToNextCycle postMoveMatrix else postMoveMatrix
 
 progressTime :: Float -> GameState -> GameState 
-progressTime deltaTime gameState = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore }
-  where
-    forceFall = (timeSinceLastDrop gameState + deltaTime) > 1
-    newTime = if forceFall then 0 else (timeSinceLastDrop gameState + deltaTime)
-    newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
-    --newMatrix = if forceFall then applyMove (matrix gameState) MoveRight else matrix gameState
-    --newMatrix = if forceFall then emptyMatrix else matrix gameState
+progressTime deltaTime gameState
+    | gameRunning gameState == False = gameState
+    | isGameOver (matrix gameState) = GameState { matrix = matrix gameState, timeSinceLastDrop = timeSinceLastDrop gameState, score = score gameState, gameRunning = False }
+    | otherwise = GameState { matrix = newMatrix, timeSinceLastDrop = newTime, score = newScore, gameRunning = True}
+      where
+        forceFall = (timeSinceLastDrop gameState + deltaTime) > 1
+        newTime = if forceFall then 0 else (timeSinceLastDrop gameState + deltaTime)
+        newMatrix = if forceFall then (matrix (nextBoardState (EventKey (Char 's') Down a b) gameState)) else matrix gameState
+        --newMatrix = if forceFall then applyMove (matrix gameState) MoveRight else matrix gameState
+        --newMatrix = if forceFall then emptyMatrix else matrix gameState
 
-    newScore = if forceFall then (score (nextBoardState (EventKey (Char 's') Down a b) gameState)) else (score gameState)
-    a = (Modifiers Down Up Down)
-    b = (0,0)
+        newScore = if forceFall then (score (nextBoardState (EventKey (Char 's') Down a b) gameState)) else (score gameState)
+        a = (Modifiers Down Up Down)
+        b = (0,0)
 
 --progressTime deltaTime gameState = gameState
 
@@ -83,7 +89,7 @@ updateHighScore = 200
 
 showGameState :: GameState -> Picture
 showGameState gameState
-  | isGameOver (matrix gameState) = showGameOver (score gameState) getHighScore
+  | gameRunning gameState == False = showGameOver (score gameState) getHighScore
   | otherwise = showGrid (matrix gameState) (score gameState)
 main :: IO ()
 main = play window black 30 newGameState showGameState nextBoardState progressTime
