@@ -2,6 +2,8 @@ module MatrixController where
 
 import Data.List (minimumBy)
 import System.Random (randomRIO)
+import Data.Typeable (typeOf)
+import System.IO.Unsafe (unsafePerformIO)
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
 data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
@@ -11,6 +13,26 @@ data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
 
 getColor :: Square -> BlockColor
 getColor (Square color _) = color
+
+veryRandom :: [Square] -> Int -> Int
+veryRandom [] _ = 0
+veryRandom (x:xs) index = index * (colority + activity) + veryRandom xs (index + 1)
+  where 
+    activity
+      | getActive x == Enable = 1
+      | getActive x == Disable = 4
+      | otherwise = 9
+    colority
+      | getColor x == Black = 17
+      | getColor x == Blue = 2
+      | getColor x == Cyan = 31
+      | getColor x == Orange = 48
+      | getColor x == Yellow = 53
+      | getColor x == Green = 62
+      | getColor x == Violet = 71
+      | getColor x == Red = 88
+
+
 
 getActive :: Square -> Active
 getActive (Square _ active) = active
@@ -144,8 +166,8 @@ clearableCount :: [[Square]] -> Int
 clearableCount matrix = length (filter (\k -> canClearLine k) matrix)
 
 -- TO TEST
-goToNextCycle :: [[Square]] -> [[Square]]
-goToNextCycle matrix = (putRandomTetromino . clearMatrix . groundBlocks) matrix
+goToNextCycle :: [[Square]] -> Int -> [[Square]]
+goToNextCycle matrix seed = putRandomTetromino (clearMatrix (groundBlocks matrix)) seed
 
 
 ------------ GAME LOGIC ------------
@@ -163,8 +185,11 @@ groundBlocks :: [[Square]] -> [[Square]]
 groundBlocks [] = []
 groundBlocks (x:xs) = map (\(Square color active) -> if active == Enable then Square color Disable else Square color active) x : groundBlocks xs
 
-getRandomTetromino :: Tetromino
-getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
+getRandomTetromino :: Int -> Tetromino
+getRandomTetromino seed = xs !! idx
+  where
+    xs = [Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan, Tetromino [(0,0),(1,0),(0,-1),(0,-2)] Orange, Tetromino [(0,0),(1,0),(0,-1),(1,-1)] Yellow, Tetromino [(0,0),(1,0),(1,-1),(1,-2)] Green, Tetromino [(0,0),(1,0),(2,0),(1,-1)] Violet, Tetromino [(0,0),(1,0),(1,-1),(2,-1)] Blue, Tetromino [(0,0),(0,-1),(1,-1),(1,-2)] Red]
+    idx = ((unsafePerformIO $ randomRIO (0, length xs - 1)) + seed) `mod` 7
 -- P
 --getRandomTetromino :: IO Tetromino
 --getRandomTetromino = case randomRIO (0, 6) of
@@ -188,9 +213,9 @@ getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
 
 
 -- TO TEST
-putRandomTetromino :: [[Square]] -> [[Square]]
-putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
-  where newTetronimo = getRandomTetromino
+putRandomTetromino :: [[Square]] -> Int -> [[Square]]
+putRandomTetromino matrix seed = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
+  where newTetronimo = getRandomTetromino seed
 
 ------------ PIECE ROTATION LOGIC ------------
 

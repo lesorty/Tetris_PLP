@@ -25,14 +25,14 @@ window = InWindow "My Game" (550, 800) (10, 10)
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color
 colorForSquare square
-  | blockColor == Cyan = makeColorI 41 178 178 255 -- ciano
-  | blockColor == Blue = makeColorI 0 94 94 255 -- azul escuro
+  | blockColor == Cyan = makeColorI 0 245 230 255 -- ciano
+  | blockColor == Blue = makeColorI 0 20 245 255 -- azul escuro
   | blockColor == Orange = makeColorI 255 102 0 255 -- laranja
-  | blockColor == Yellow = makeColorI 255 255 0 255 -- amarelo
-  | blockColor == Green = makeColorI 0 179 89 255 -- verde
-  | blockColor == Violet = makeColorI 178 41 163 255 -- roxo
-  | blockColor == Red = makeColorI 255 51 51 255 -- vermelho
-  | otherwise = makeColorI 217 217 217 255 -- cor do fundo
+  | blockColor == Yellow = makeColorI 230 230 0 255 -- amarelo
+  | blockColor == Green = makeColorI 0 255 0 255 -- verde
+  | blockColor == Violet = makeColorI 224 12 245 255 -- roxo
+  | blockColor == Red = makeColorI 255 0 0 255 -- vermelho
+  | otherwise = makeColorI 0 0 0 255 -- cor do fundo
   where blockColor = getColor square
 
 -- Define o array de strings predefinido
