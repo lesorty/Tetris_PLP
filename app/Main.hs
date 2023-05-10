@@ -84,6 +84,6 @@ updateHighScore = 200
 showGameState :: GameState -> Picture
 showGameState gameState
   | isGameOver (matrix gameState) = showGameOver (score gameState) getHighScore
-  | otherwise = showGrid (take 20 (matrix gameState)) (score gameState)
+  | otherwise = showGrid (matrix gameState) (score gameState)
 main :: IO ()
 main = play window black 30 newGameState showGameState nextBoardState progressTime

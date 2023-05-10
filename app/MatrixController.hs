@@ -42,7 +42,7 @@ findActiveIndexes matrix = do
 -- iterate by the rows and columns to get the i and j of the elements
   (i, row) <- zip [0..] matrix
   (j, elem) <- zip [0..] row
-  if (getActive elem) == Enable then return (i, j) else []
+  if (getActive elem) == Enable then return (j, i) else []
 
 emptyLine :: [Square]
 emptyLine = replicate 10 emptySquare
@@ -56,7 +56,7 @@ canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 canBePut matrix [] = True
 canBePut matrix (h : ts)
   | fst h < 0 || fst h > 9 || snd h < 0 || snd h > 24 = False
-  | getActive(matrix !! (fst h) !! (snd h)) == Disable = False
+  | getActive(matrix !! (snd h) !! (fst h)) == Disable = False
   | otherwise = canBePut matrix ts
 
 -- TO TEST
@@ -94,7 +94,7 @@ getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
   | move == MoveLeft = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
   | move == MoveRight = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == MoveDown = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == MoveDown = map (\k -> (fst k, (snd k)-1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -180,7 +180,7 @@ getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (getTetrominoBlocks newTetronimo)
+putRandomTetromino matrix = raiseUntilAllowed matrix (Square (getTetrominoColor newTetronimo) Enable) (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo))
   where newTetronimo = getRandomTetromino
 
 ------------ PIECE ROTATION LOGIC ------------
