@@ -4,7 +4,7 @@ import Data.List (minimumBy)
 import System.Random (randomRIO)
   
 data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
-data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving Eq
+data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
 data Active = Enable | Disable | None deriving Eq
 data Square = Square BlockColor Active deriving Eq
 data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
@@ -23,6 +23,13 @@ getActiveColor matrix = firstActiveColor
 emptyMatrix :: [[Square]]
 emptyMatrix = replicate 25 emptyLine
 
+--uses emptyMatrix
+bottomLeftFilledMatrix :: [[Square]]
+bottomLeftFilledMatrix = updateMatrixElement emptyMatrix (0,0) (Square Cyan Enable)
+
+topLeftFilledMatrix :: [[Square]]
+topLeftFilledMatrix = updateMatrixElement emptyMatrix (2,19) (Square Cyan Enable)
+
 getTetrominoBlocks :: Tetromino -> [(Int, Int)]
 getTetrominoBlocks (Tetromino blocksPos _) = blocksPos
 
@@ -35,7 +42,7 @@ findActiveIndexes matrix = do
 -- iterate by the rows and columns to get the i and j of the elements
   (i, row) <- zip [0..] matrix
   (j, elem) <- zip [0..] row
-  if (getActive elem) == Enable then return (i, j) else []
+  if (getActive elem) == Enable then return (j, i) else []
 
 emptyLine :: [Square]
 emptyLine = replicate 10 emptySquare
@@ -49,7 +56,7 @@ canBePut :: [[Square]] -> [(Int, Int)] -> Bool
 canBePut matrix [] = True
 canBePut matrix (h : ts)
   | fst h < 0 || fst h > 9 || snd h < 0 || snd h > 24 = False
-  | getActive(matrix !! (fst h) !! (snd h)) == Disable = False
+  | getActive(matrix !! (snd h) !! (fst h)) == Disable = False
   | otherwise = canBePut matrix ts
 
 -- TO TEST
@@ -64,7 +71,7 @@ canMoveTetromino matrix move = canBePut matrix (getEndPos matrix move)
 
 -- magia.
 updateMatrixElement :: [[Square]] -> (Int, Int) -> Square -> [[Square]]
-updateMatrixElement matrix (i, j) newValue =
+updateMatrixElement matrix (j, i) newValue =
   take i matrix ++
   [take j (matrix !! i) ++ [newValue] ++ drop (j + 1) (matrix !! i)] ++
   drop (i + 1) matrix
@@ -78,7 +85,7 @@ removeActiveBlocks (x:xs) =
 
 -- TO TEST
 addBlocks :: [[Square]] -> Square -> [(Int, Int)] -> [[Square]]
-addBlocks matrix square [] = [] 
+addBlocks matrix square [] = matrix
 addBlocks matrix square (x:xs) = addBlocks updatedMatrix square xs
     where updatedMatrix = updateMatrixElement matrix ((fst x), (snd x)) square
 
@@ -87,7 +94,7 @@ getEndPos :: [[Square]] -> Move -> [(Int, Int)]
 getEndPos matrix move 
   | move == MoveLeft = map (\k -> ((fst k)-1, snd k)) (findActiveIndexes matrix)
   | move == MoveRight = map (\k -> ((fst k)+1, snd k)) (findActiveIndexes matrix)
-  | move == MoveDown = map (\k -> (fst k, (snd k)+1)) (findActiveIndexes matrix)
+  | move == MoveDown = map (\k -> (fst k, (snd k)-1)) (findActiveIndexes matrix)
 
 -- TO TEST
 -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
@@ -173,7 +180,7 @@ getRandomTetromino = Tetromino [(0,0),(1,0),(2,0),(3,0)] Cyan -- I
 
 -- TO TEST
 putRandomTetromino :: [[Square]] -> [[Square]]
-putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (getTetrominoBlocks newTetronimo)
+putRandomTetromino matrix = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
   where newTetronimo = getRandomTetromino
 
 ------------ PIECE ROTATION LOGIC ------------
@@ -187,6 +194,8 @@ canBePutWithSideMove matrix positions
 
 -- TO TEST
 -- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
+-- TO TEST
+-- pega uma matriz e um sentido. retorna essa matriz com os blocos ativos rotacionados pra direita
 rotateTetromino :: [[Square]] -> [[Square]]
 rotateTetromino matrix =
   let activeIndexes = findActiveIndexes matrix
@@ -195,7 +204,8 @@ rotateTetromino matrix =
       rotatedZeroed = rotatePoints zeroedIndexes
       returnedToPos = map (\x -> addTuples x baseDist) rotatedZeroed
       enclosed = encloseCoords returnedToPos
-  in raiseUntilAllowed matrix enclosed
+      finalPos = raiseUntilAllowed matrix enclosed
+    in changeActiveBlocksPos matrix finalPos
 
 
 -- TO TEST
@@ -225,12 +235,12 @@ rotatePoints cloud = map (\x -> (snd x, -(fst x))) cloud
 
 
 -- TO TEST
---pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então bota elas na matriz
-raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [[Square]]
+--pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então retorna as novas coordenadas
+raiseUntilAllowed :: [[Square]] -> [(Int, Int)] -> [(Int, Int)]
 raiseUntilAllowed matrix coords 
-  | canBePut matrix coords = changeActiveBlocksPos matrix coords
-  | canBePutWithSideMove matrix coords == 1 = changeActiveBlocksPos matrix (map (\k -> (((fst k) - 1), (snd k))) coords)
-  | canBePutWithSideMove matrix coords == 2 = changeActiveBlocksPos matrix (map (\k -> (((fst k) + 1), (snd k))) coords)
+  | canBePut matrix coords = coords
+  | canBePutWithSideMove matrix coords == 1 = map (\k -> (((fst k) - 1), (snd k))) coords
+  | canBePutWithSideMove matrix coords == 2 = map (\k -> (((fst k) + 1), (snd k))) coords
   | otherwise = raiseUntilAllowed matrix (map (\k -> ((fst k), ((snd k) + 1))) coords)
 
 encloseCoords :: [(Int, Int)] -> [(Int, Int)]
@@ -243,5 +253,9 @@ encloseCoords coords = newCoords
       | maxX >= 10 = map (\k -> ((fst k) - (maxX - 9), snd k)) coords
       | otherwise = coords
 
-  
-
+-- getRandomElement :: [a] -> Maybe a
+-- getRandomElement [] = Nothing
+-- getRandomElement xs = Just $ xs !! index
+--   where
+--     (lo, hi) = (0, length xs - 1)
+--     index = fst $ randomR (lo, hi) (mkStdGen 42) -- Using a fixed seed for reproducibility

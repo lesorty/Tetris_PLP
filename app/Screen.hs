@@ -5,8 +5,9 @@ import MatrixController
 
 -- showGrid, desenha o grid completo na tela, com divisórias
 showGrid :: [[Square]] -> Int -> Picture
-showGrid g score =
-  let cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
+showGrid matrix score =
+  let g = take 20 matrix
+      cells = concat [[drawCell (x, y) c | (c, x) <- zip row [0 ..]] ++ [line [(fst (cellToScreen (0, y)) - cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2), (fst (cellToScreen ((length row) - 1, y)) + cellWidth / 2, snd (cellToScreen (0, y)) - cellHeight / 2)]] | (row, y) <- zip g [0 ..]]
       scoreBox = translate (-400) 300 $ scale 0.3 0.3 $ color black $ text $ "Score: " ++ show score
    in pictures [scoreBox, pictures cells]
 
@@ -19,7 +20,7 @@ cellHeight = 30.0
 
 
 window :: Display
-window = InWindow "My stey" (1000, 600) (10, 10)
+window = InWindow "My Game" (400, 800) (10, 10)
 
 -- Define as cores de cada caractere
 colorForSquare :: Square -> Color
@@ -35,14 +36,14 @@ colorForSquare square
   where blockColor = getColor square
 
 -- Define o array de strings predefinido
-grid :: [String]
-grid = replicate 20 "abcdefg.ab"
+--grid :: [String]
+--grid = replicate 20 "abcdefg.ab"
 
 -- Converte uma coordenada de célula (x, y) em uma posição da tela (x, y)
 cellToScreen :: (Int, Int) -> (Float, Float)
 cellToScreen (x, y) =
-  let x' = fromIntegral x * cellWidth - (cellWidth * fromIntegral (length (head grid))) / 2
-      y' = fromIntegral y * cellHeight - (cellHeight * fromIntegral (length grid)) / 2
+  let x' = fromIntegral x * cellWidth - (cellWidth * 10) / 2
+      y' = fromIntegral y * cellHeight - (cellHeight * 20) / 2
    in (x', y')
 
 -- Desenha uma célula na tela, com divisórias
