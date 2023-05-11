@@ -4,6 +4,8 @@ Feito por: Erick Farias, Julio Hsu, Lucas Emanuel, Paulo Ricardo, Steylor Nobreg
 Implementação em Haskell do clássico jogo Tetris com todas as features originais!!
 Frontend implementado utilizado a biblioteca Gloss
 
+Para Rodar o código basta usar o comando "cabal run" na raiz do diretório
+
 Elas são:
 - Movimentação das peças lateralmente
 - Girar a peça
