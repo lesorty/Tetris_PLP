@@ -5,14 +5,18 @@ import System.Random (randomRIO)
 import Data.Typeable (typeOf)
 import System.IO.Unsafe (unsafePerformIO)
   
-data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown deriving Eq
+data Move = MoveNone | MoveLeft | MoveRight | MoveRotate | MoveDown | SuperDown | MoveSwap deriving Eq
 data BlockColor = Black | Blue | Cyan | Orange | Yellow | Green | Violet | Red deriving (Eq, Show)
 data Active = Prediction | Enable | Disable | None deriving Eq
 data Square = Square BlockColor Active deriving Eq
-data Tetromino = Tetromino [(Int,Int)] BlockColor deriving Eq
+data Tetromino = NullTetromino | Tetromino [(Int,Int)] BlockColor deriving Eq
 
 getColor :: Square -> BlockColor
 getColor (Square color _) = color
+
+getCoordsFromTetromino :: Tetromino -> [(Int,Int)]
+getCoordsFromTetromino (Tetromino coords _) = coords
+getCoordsFromTetromino NullTetromino = []
 
 veryRandom :: [Square] -> Int -> Int
 veryRandom [] _ = 0
@@ -230,6 +234,15 @@ putRandomTetromino :: [[Square]] -> Int -> [[Square]]
 putRandomTetromino matrix seed = addBlocks matrix (Square (getTetrominoColor newTetronimo) Enable) (raiseUntilAllowed matrix (map (\k -> addTuples k (3, 19)) (getTetrominoBlocks newTetronimo)))
   where newTetronimo = getRandomTetromino seed
 
+swapTetromino :: [[Square]] -> Tetromino -> [[Square]]
+swapTetromino matrix tetromino = addBlocks clearedMatrix (Square (getTetrominoColor tetromino) Enable) finalCoords
+  where
+    currentBaseDist = baseDistance (findActiveIndexes matrix)
+    tetrominoBaseDist = baseDistance (getCoordsFromTetromino tetromino)
+    clearedMatrix = removeActiveBlocks matrix
+    finalCoords = raiseUntilAllowed clearedMatrix (map (\k -> addTuples k (subtractTuples currentBaseDist tetrominoBaseDist)) (getCoordsFromTetromino tetromino))
+
+
 ------------ PIECE ROTATION LOGIC ------------
 
 -- TO TEST
@@ -254,15 +267,19 @@ rotateTetromino matrix =
       finalPos = raiseUntilAllowed matrix enclosed
     in changeActiveBlocksPos matrix finalPos
 
+bringIndexesToZeroZero :: [(Int, Int)] -> [(Int, Int)]
+bringIndexesToZeroZero indexes = zeroedIndexes
+  where
+    baseDist = baseDistance indexes
+    zeroedIndexes = map (\x -> subtractTuples x baseDist) indexes
+
+
+
 
 -- TO TEST
--- pega um conjunto de pontos na matrix. retorna, dentre os pontos mais baixos, o mais à esquerda
+-- pega um conjunto de pontos na matrix. retorna, o ponto no top left
 baseDistance :: [(Int, Int)] -> (Int, Int)
-baseDistance coords = minimumBy cmpCoords coords
-  where
-    cmpCoords (x1, y1) (x2, y2)
-      | y1 /= y2 = compare y1 y2
-      | otherwise = compare x1 x2
+baseDistance coords = (minimum (map (\x -> fst x) coords), maximum (map (\x -> snd x) coords))
 
 
 -- TO TEST
@@ -278,7 +295,11 @@ addTuples (a, b) (c, d) = (a + c, b + d)
 -- TO TEST
 -- rotaciona um conjunto de pontos no sentido horário
 rotatePoints :: [(Int, Int)] -> [(Int, Int)]
-rotatePoints cloud = map (\x -> (snd x, -(fst x))) cloud
+rotatePoints cloud = map (\k -> ((fst k) - minX, (snd k) - maxY)) rotated
+  where
+    rotated = map (\x -> (snd x, -(fst x))) cloud
+    minX = minimum (map (\x -> fst x) rotated)
+    maxY = maximum (map (\x -> snd x) rotated)
 
 
 -- TO TEST

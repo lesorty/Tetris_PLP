@@ -35,7 +35,7 @@ colorForSquare square
   | otherwise = makeColorI 0 0 0 a -- cor do fundo
   where 
     blockColor = getColor square
-    a = if getActive square == Prediction then 127 else 255
+    a = if getActive square == Prediction then 110 else 255
 
 -- Define o array de strings predefinido
 --grid :: [String]
