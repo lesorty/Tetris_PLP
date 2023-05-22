@@ -2,9 +2,9 @@
 Feito por: Erick Farias, Julio Hsu, Lucas Emanuel, Paulo Ricardo, Steylor Nobrega
 
 Implementação em Haskell do clássico jogo Tetris com todas as features originais!!
-Frontend implementado utilizado a biblioteca Gloss
+Frontend implementado utilizado a biblioteca Gloss.
 
-Para Rodar o código basta usar o comando "cabal run" na raiz do diretório
+Para rodar o código, basta instalar e rodar o executável "Tetris-PLP.exe".
 
 Elas são:
 - Movimentação das peças lateralmente
@@ -17,9 +17,9 @@ Elas são:
 - Progressão de dificuldade
 
 Comandos:
-s <- descer a pesça mais rápido
-w <- girar a peça
-a <- mover para esquerda
-d <- mover para a direita
-c <- guardar a peça/ trocar para guardada
-space <- descer a peça instantaneamente
+s <- Descer a peça mais rápido
+w <- Girar a peça
+a <- Mover para esquerda
+d <- Mover para a direita
+c <- Guardar a peça / Trocar para guardada
+space <- Descer a peça instantaneamente
