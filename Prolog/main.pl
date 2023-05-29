@@ -29,6 +29,12 @@ applyMove(GameState, 'Left', NewGameState) :-
     moveTetromino(Matrix, 'Left', NewMatrix),
     NewGameState = [NewMatrix, Score, DroppedPieces, PieceSwap], !.
 
+applyMove(GameState, 'Left', NewGameState) :-
+    print('left move'), nl,
+    [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
+    \+(canMoveTetromino(Matrix, 'Left')),
+    NewGameState = [Matrix, Score, DroppedPieces, PieceSwap], !.
+
 applyMove(GameState, 'Right', NewGameState) :-
     print('right move'), nl,
     [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
@@ -36,18 +42,25 @@ applyMove(GameState, 'Right', NewGameState) :-
     moveTetromino(Matrix, 'Right', NewMatrix),
     NewGameState = [NewMatrix, Score, DroppedPieces, PieceSwap], !.
 
+applyMove(GameState, 'Right', NewGameState) :-
+    print('right move'), nl,
+    [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
+    \+(canMoveTetromino(Matrix, 'Right')),
+    NewGameState = [Matrix, Score, DroppedPieces, PieceSwap], !.
+
 applyMove(GameState, 'Down', NewGameState) :-
-    print('down move'), nl,
     [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
     canMoveTetromino(Matrix, 'Down'),
+    print('down move'), nl,
     moveTetromino(Matrix, 'Down', NewMatrix),
     NewGameState = [NewMatrix, Score, DroppedPieces, PieceSwap], !.
 
 applyMove(GameState, 'Down', NewGameState) :-
-    print('down move'), nl,
     [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
     \+(canMoveTetromino(Matrix, 'Down')),
+    print('down move but cant'), nl,
     goToNextCycle(Matrix, [AddedScore | NewMatrix]),
+    print('next cycle'), nl,
     NewDroppedPieces is DroppedPieces + 1,
     NewScore is Score + AddedScore,
     NewGameState = [NewMatrix, NewScore, NewDroppedPieces, PieceSwap], !.
@@ -69,10 +82,14 @@ applyMove(GameState, 'FullFall', NewGameState) :-
     print('full fall move'), nl,
     [Matrix, Score, DroppedPieces, PieceSwap] = GameState,
     fullFall(Matrix, NewMatrix),
-    goToNextCycle(NewMatrix, [AddedScore | NewMatrix]),
+    print('managed to fullfall'), nl,
+    goToNextCycle(NewMatrix, [AddedScore | PostCycleMatrix]),
+    print('next cycle'), nl,
     NewDroppedPieces is DroppedPieces + 1,
+    print('dropped pieces: '), print(NewDroppedPieces), nl,
     NewScore is Score + AddedScore,
-    NewGameState = [NewMatrix, NewScore, NewDroppedPieces, PieceSwap], !.
+    print('score: '), print(NewScore), nl,
+    NewGameState = [PostCycleMatrix, NewScore, NewDroppedPieces, PieceSwap], !.
 
 applyMove(GameState, Move, NewGameState) :-
     Move \= 'Left', Move \= 'Right', Move \= 'Down', Move \= 'Rotate', Move \= 'Swap', Move \= 'FullFall',
@@ -111,7 +128,7 @@ inputToMove('d', 'Right').
 inputToMove('s', 'Down').
 inputToMove('w', 'Rotate').
 inputToMove('c', 'Swap').
-inputToMove('Space', 'FullFall').
+inputToMove('v', 'FullFall').
 
 main :-
     newGameState(GameState),
