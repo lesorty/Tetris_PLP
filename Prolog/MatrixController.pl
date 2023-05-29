@@ -28,36 +28,34 @@ isInactive('f').
 isInactive('g').
 
 getActiveLineColor([], 'none').
-getActiveLineColor([Head|_], Color) :- 
-    isActive(Head), 
-    getColor(Head, Color).
+getActiveLineColor([Head|_], Head) :- 
+    isActive(Head).
 getActiveLineColor([Head|Tail], Color) :-
     \+(isActive(Head)),
     getActiveLineColor(Tail, Color).
 
 % -- retorna a cor dos quadrados que estão caindo
+isSame(X,X).
 getActiveColor([Line|_], Color) :- 
     getActiveLineColor(Line, LineColor),
-    LineColor =\= 'none',
+    \+ (isSame(LineColor, 'none')),
     Color = LineColor.
 
 getActiveColor([Line|Tail], Color) :-
     getActiveLineColor(Line, LineColor),
-    LineColor =:= 'none',
+    isSame(LineColor, 'none'),
     getActiveColor(Tail, Color).
 
 
 toLower(X, Y) :- 
     char_code(X, Code), 
-    print('Code: '), print(Code), nl,
     65 =< Code, Code =< 90,
-    CodeLower is Code - 32, 
-    print('CodeLower: '), print(CodeLower), nl,
+    CodeLower is Code + 32, 
     char_code(Y, CodeLower).
 
 toLower(X, X) :- 
     char_code(X, Code), 
-    97 =< Code, Code =< 122.
+    (Code < 65; Code > 90).
 
 % cria uma lista com n elementos iguais a X
 repeat(_, 0, []).
@@ -87,8 +85,8 @@ getActiveTetromino(Matrix, [Color | Coords]) :-
     bringIndexesToZeroZero(CoordsInMatrix, Coords).
 
 findActiveLineIndexes([], _, []).
-findActiveLineIndexes([H|T], X, List) :- 
-    isActive(H), 
+findActiveLineIndexes([H|T], X, List) :-
+    isActive(H),
     Next is X + 1, 
     findActiveLineIndexes(T, Next, TailList), 
     append([X], TailList, List).
@@ -99,7 +97,9 @@ findActiveLineIndexes([H|T], X, List) :-
     findActiveLineIndexes(T, Next, List).
 
 appendToAll([], _, []).
-appendToAll([H|T], K, [NewH|NewT]) :- append(H, [K], NewH), appendToAll(T, K, NewT).
+appendToAll([H|T], K, [NewH|NewT]) :- 
+    append([H], [K], NewH), 
+    appendToAll(T, K, NewT).
 
 findActiveMatrixIndexes([], _, []).
 findActiveMatrixIndexes([H|T], Y, List) :- 
@@ -143,12 +143,14 @@ replace([H|T], I, X, [H|R]) :-
     replace(T, I1, X, R).
 
 % -- atualiza uma lista de elementos da matriz
-updateMatrixElements(Matrix, _, [], Matrix).
+
 updateMatrixElements(Matrix, Value, [[X,Y]|T], NewMatrix) :- 
     updateMatrixElement(Matrix, [X,Y], Value, NewMatrix1),
     updateMatrixElements(NewMatrix1, Value, T, NewMatrix).
 
+updateMatrixElements(Matrix, _, [], Matrix).    
 
+    
 
 eraseIfActive(Start, End) :- isActive(Start), End = '.'.
 eraseIfActive(X, X) :- \+ (isActive(X)).
@@ -199,14 +201,13 @@ fullFall(Matrix, NewMatrix) :-
     fullFall(PostFallMatrix, NewMatrix).
 fullFall(Matrix, Matrix) :- \+(canMoveTetromino(Matrix, 'Down')).
 
-
 % ------------ CLEAR MATRIX LOGIC ------------
 
 
 % -- pega uma matriz e um índice. retorna se essa linha é clearável ou não
 % canClearLine :: [Square] -> Bool
 canClearLine([]).
-canClearLine([H|T]) :- isDisabled(H), canClearLine(T).
+canClearLine([H|T]) :- isInactive(H), canClearLine(T).
 
 removeFullLines([], []).
 removeFullLines([H|T], NewMatrix) :- 
@@ -222,6 +223,9 @@ padUntil25(Matrix, NewMatrix) :-
     emptyLine(EmptyLine),
     append(Matrix, [EmptyLine], NewMatrix),
     padUntil25(NewMatrix, NewMatrix).
+padUntil25(Matrix, Matrix) :-
+    length(Matrix, 25).
+
 
 % -- pega uma matriz. retorna essa matriz com as linhas clearáveis limpas
 clearMatrix(Matrix, [AddedScore | NewMatrix]) :- 
@@ -236,7 +240,7 @@ clearableCount(Matrix, Count) :-
     length(List, Count).
 
 % -- reinicia o ciclo chamando uma nova peça e limpando as linhas completas
-goToNextCycle(Matrix, [AddedScore | NewMatrix]) :- 
+goToNextCycle(Matrix, [AddedScore | NewMatrix]) :-
     groundBlocks(Matrix, GroundedMatrix),
     clearMatrix(GroundedMatrix, [AddedScore | ClearedMatrix]),
     putRandomTetromino(ClearedMatrix, NewMatrix).
@@ -260,16 +264,21 @@ isGameOver(Matrix) :-
 
 % -- para cada quadrado da matriz, desativa caso seja ativo
 %groundBlocks :: [[Square]] -> [[Square]]
+groundLine([], []).
+groundLine([H|T], [NewH|NewT]) :- 
+    toLower(H, NewH),
+    groundLine(T, NewT).
+
 groundBlocks([], []).
 groundBlocks([H|T], [NewH|NewT]) :- 
-    maplist(toLower, H, NewH),
+    groundLine(H, NewH),
     groundBlocks(T, NewT).
 
 % -- gera uma peça aleatória
 % getRandomTetromino :: Int -> Tetromino
 getRandomTetromino(Tetromino) :- 
-    %random(0, 7, Random),
-    Random is 0,
+    random(0, 7, Random),
+    %Random is 0,
     tetromino(Random, Tetromino).
 
 tetromino(0, ['A',[0,0],[1,0],[2,0],[3,0]]).
@@ -288,7 +297,7 @@ putRandomTetromino(Matrix, NewMatrix) :-
     getTetrominoBlocks(Tetromino, Blocks),
     addToAllLists(Blocks, [3, 19], NewBlocks),
     raiseUntilAllowed(Matrix, NewBlocks, FinalCoords),
-    updateMatrixElements(Matrix, Color, FinalCoords, NewMatrix).
+    updateMatrixElements(Matrix, Color, FinalCoords, NewMatrix).    
 
 % -- troca a peça atual por uma reserva
 % swapTetromino :: [[Square]] -> Tetromino -> [[Square]]
@@ -335,7 +344,7 @@ canBePutWithSideMove(Matrix, Coords, 'No') :-
 rotateTetromino(Matrix, NewMatrix) :- 
     findActiveMatrixIndexes(Matrix, 0, ActiveIndexes),
     baseDistance(ActiveIndexes, BaseDistance),
-    subtractLists(ActiveIndexes, BaseDistance, ZeroedIndexes),
+    subtractFromAllLists(ActiveIndexes, BaseDistance, ZeroedIndexes),
     rotatePoints(ZeroedIndexes, RotatedZeroed),
     addToAllLists(RotatedZeroed, BaseDistance, ReturnedToPos),
     encloseCoords(ReturnedToPos, Enclosed),
@@ -356,7 +365,7 @@ baseDistance(Coords, [X, Y]) :-
     maxY(Coords, Y).
 
 subtractLists([], [], []).
-subtractLists([H1|T1], [H2|T2], [H3|T3]) :- 
+subtractLists([H1|T1], [H2|T2], [H3|T3]) :-
     H3 is H1 - H2,
     subtractLists(T1, T2, T3).
 
@@ -390,44 +399,42 @@ rotatePoints(Points, Result) :-
 % --pega um conjunto de coordenadas. sobe elas até que possa botar elas na matriz, então retorna as novas coordenadas
 raiseUntilAllowed(Matrix, Coords, NewCoords) :- 
     canBePutWithSideMove(Matrix, Coords, 'No'),
-    print('No side move'), nl,
     addToAllLists(Coords, [0, 1], ShiftedCoords),
     raiseUntilAllowed(Matrix, ShiftedCoords, NewCoords), !.
-raiseUntilAllowed(Matrix, Coords, NewCoords) :- 
+raiseUntilAllowed(Matrix, Coords, NewCoords) :-     
     canBePutWithSideMove(Matrix, Coords, 'Right'),
-    print('right move'), nl,
     addToAllLists(Coords, [1, 0], NewCoords), !.
+
 raiseUntilAllowed(Matrix, Coords, NewCoords) :-
     canBePutWithSideMove(Matrix, Coords, 'Left'),
-    print('Left move'), nl,
     addToAllLists(Coords, [-1, 0], NewCoords), !.
 raiseUntilAllowed(Matrix, Coords, Coords) :- 
-    canBePutWithSideMove(Matrix, Coords, 'None'),
-    print('No move'), nl.
-
+    canBePutWithSideMove(Matrix, Coords, 'None').
 
 
 minX([], 99).
-minX([(X,_)|T], Min) :- minX(T, TailMin), Min is min(X, TailMin).
+minX([[X,_]|T], Min) :- 
+    minX(T, TailMin), 
+    Min is min(X, TailMin).
 
 maxX([], -99).
-maxX([(X,_)|T], Max) :- maxX(T, TailMax), Max is max(X, TailMax).
+maxX([[X,_]|T], Max) :- maxX(T, TailMax), Max is max(X, TailMax).
 
 minY([], 99).
-minY([(_,Y)|T], Min) :- minY(T, TailMin), Min is min(Y, TailMin).
+minY([[_,Y]|T], Min) :- minY(T, TailMin), Min is min(Y, TailMin).
 
 maxY([], -99).
-maxY([(_,Y)|T], Max) :- maxY(T, TailMax), Max is max(Y, TailMax).
+maxY([[_,Y]|T], Max) :- maxY(T, TailMax), Max is max(Y, TailMax).
 
 % -- coloca coordenadas dentro dos limites da matriz
 encloseCoords([], []).
 encloseCoords(Coords, NewCoords) :- 
     minX(Coords, MinX),
-    minX < 0,
+    MinX < 0,
     addToAllLists(Coords, [-MinX, 0], NewCoords).
 encloseCoords(Coords, NewCoords) :-
     maxX(Coords, MaxX),
-    maxX > 9,
+    MaxX > 9,
     Shift is -MaxX + 9,
     addToAllLists(Coords, [Shift, 0], NewCoords).
 
