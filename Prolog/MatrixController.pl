@@ -57,6 +57,11 @@ toLower(X, X) :-
     char_code(X, Code), 
     (Code < 65; Code > 90).
 
+toLowerString([], []).
+toLowerString([H|T], [NewH|NewT]) :- 
+    toLower(H, NewH), 
+    toLowerString(T, NewT).
+
 % cria uma lista com n elementos iguais a X
 repeat(_, 0, []).
 repeat(X, N, [X|L]) :- N > 0, N1 is N - 1, repeat(X, N1, L).
@@ -155,11 +160,17 @@ updateMatrixElements(Matrix, _, [], Matrix).
 eraseIfActive(Start, End) :- isActive(Start), End = '.'.
 eraseIfActive(X, X) :- \+ (isActive(X)).
 
+removeActiveLineBlocks([], []).
+removeActiveLineBlocks([H|T], [NewH|NewT]) :- 
+    eraseIfActive(H, NewH),
+    removeActiveLineBlocks(T, NewT).
+
 % -- retorna a matriz sem blocos ativos
-removeActiveBlocks([], []).
-removeActiveBlocks([H|T], [NewH|NewT]) :- 
-    removeActiveBlocks(T, NewT),
-    maplist(eraseIfActive, H, NewH).
+removeActiveMatrixBlocks([], []).
+removeActiveMatrixBlocks([H|T], [NewH|NewT]) :- 
+    removeActiveLineBlocks(H, NewH),
+    removeActiveMatrixBlocks(T, NewT).
+    
 
 % -- retorna a matriz sem blocos de previsão
 % removePrediction :: [[Square]] -> [[Square]]
@@ -178,7 +189,7 @@ getEndPos(Matrix, 'Down', List) :-
 % -- remove todos os blocos ativos. bota blocos ativos nas posiçoes indicadas
 changeActiveBlocksPos(Matrix, List, NewMatrix) :- 
     getActiveColor(Matrix, Color),
-    removeActiveBlocks(Matrix, ActivelessMatrix),
+    removeActiveMatrixBlocks(Matrix, ActivelessMatrix),
     updateMatrixElements(ActivelessMatrix, Color, List, NewMatrix).
 
 % -- movimenta o Tetromino
@@ -221,8 +232,8 @@ padUntil25(Matrix, NewMatrix) :-
     length(Matrix, Length),
     Length < 25,
     emptyLine(EmptyLine),
-    append(Matrix, [EmptyLine], NewMatrix),
-    padUntil25(NewMatrix, NewMatrix).
+    append(Matrix, [EmptyLine], PaddedMatrix),
+    padUntil25(PaddedMatrix, NewMatrix).
 padUntil25(Matrix, Matrix) :-
     length(Matrix, 25).
 
@@ -230,8 +241,12 @@ padUntil25(Matrix, Matrix) :-
 % -- pega uma matriz. retorna essa matriz com as linhas clearáveis limpas
 clearMatrix(Matrix, [AddedScore | NewMatrix]) :- 
     removeFullLines(Matrix, RemovedLines),
+    write('RemovedLines'),
     padUntil25(RemovedLines, NewMatrix),
-    clearableCount(Matrix, AddedScore).
+    write('padUntil25'),
+    clearableCount(Matrix, ClearedLineAmount),
+    write('clearableCount'),
+    pointsForClear(ClearedLineAmount, AddedScore).
 
 % -- retorna a quantidade de linhas que podem ser limpas de uma vez
 % clearableCount :: [[Square]] -> Int
@@ -251,8 +266,12 @@ getLast5Lines([H|T], NewMatrix) :-
     Length > 5,
     getLast5Lines(T, NewMatrix).    
 
+getLast5Lines(Matrix, Matrix) :- 
+    length(Matrix, Length),
+    Length =< 5.
+
 isEmptyLine([]).
-isEmptyLine([H|T]) :- H =:= '.', isEmptyLine(T).
+isEmptyLine([H|T]) :- H = '.', isEmptyLine(T).
 
 isEmptyMatrix([]).
 isEmptyMatrix([H|T]) :- isEmptyLine(H), isEmptyMatrix(T).
@@ -302,16 +321,30 @@ putRandomTetromino(Matrix, NewMatrix) :-
 % -- troca a peça atual por uma reserva
 % swapTetromino :: [[Square]] -> Tetromino -> [[Square]]
 swapTetromino(Matrix, Tetromino, NewMatrix) :- 
+    write('entered swapTetromino'), nl,
     getTetrominoBlocks(Tetromino, TetrominoBlocks),
+    write('got tetromino blocks'), nl,
     getTetrominoColor(Tetromino, TetrominoColor),
+    write('got tetromino color'), nl,
     findActiveMatrixIndexes(Matrix, 0, ActiveIndexes),
+    write('found active matrix indexes'), nl,
     baseDistance(ActiveIndexes, CurrentBaseDist),
-    baseDistance(Tetromino, TetrominoBaseDist),
-    removeActiveBlocks(Matrix, ClearedMatrix),
+    write('got current base distance'), nl,
+    write('Tetromino: '), print(Tetromino), nl,
+    [_ | TetrominoBlocks] = Tetromino,
+    baseDistance(TetrominoBlocks, TetrominoBaseDist),
+    write('got tetromino base distance'), nl,
+    removeActiveMatrixBlocks(Matrix, ClearedMatrix),
+    write('removed active blocks'), nl,
     subtractLists(CurrentBaseDist, TetrominoBaseDist, Shift),
+    write('got shift'), nl,
     addToAllLists(TetrominoBlocks, Shift, ShiftedBlocks),
-    raiseUntilAllowed(ClearedMatrix, ShiftedBlocks, FinalCoords),
-    updateMatrixElements(ClearedMatrix, TetrominoColor, FinalCoords, NewMatrix).
+    write('shifted blocks'), nl,
+    encloseCoords(ShiftedBlocks, EnclosedShiftedBlocks),
+    raiseUntilAllowed(ClearedMatrix, EnclosedShiftedBlocks, FinalCoords),
+    write('raised until allowed'), nl,
+    updateMatrixElements(ClearedMatrix, TetrominoColor, FinalCoords, NewMatrix),
+    write('updated matrix elements'), nl.
 
 
 
@@ -416,7 +449,6 @@ minX([], 99).
 minX([[X,_]|T], Min) :- 
     minX(T, TailMin), 
     Min is min(X, TailMin).
-
 maxX([], -99).
 maxX([[X,_]|T], Max) :- maxX(T, TailMax), Max is max(X, TailMax).
 
