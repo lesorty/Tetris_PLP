@@ -30,7 +30,39 @@ showGrid([H|T]) :-
     showGridLine(H), nl.
     
 
-/*
+numberToAscii(0, [Result]):- 
+    Result is ['aaa', 'a a', 'a a', 'a a', 'aaa'].	    
+numberToAscii(1, [Result]):- 
+    Result is [' a ', 'aa ', ' a ', ' a ', 'aaa'].    
+numberToAscii(2, [Result]):- 
+    Result is ['aaa', '  a', 'aaa', 'a  ', 'aaa'].
+numberToAscii(3, [Result]):- 
+    Result is ['aaa', '  a', 'aa', '  a', 'aaa'].
+numberToAscii(4, [Result]):-
+    Result is ['a a', 'a a', 'aaa', '  a', '  a'].
+numberToAscii(5, [Result]):-
+    Result is ['aaa', 'a  ', 'aaa', '  a', 'aaa'].
+numberToAscii(6, [Result]):-
+    Result is ['aaa', 'a  ', 'aaa', 'a a', 'aaa'].
+numberToAscii(7, [Result]):-
+    Result is ['aaa', '  a', '  a', '  a', '  a'].
+numberToAscii(8, [Result]):-
+    Result is ['aaa', 'a a', 'aaa', 'a a', 'aaa'].
+numberToAscii(9, [Result]):-
+    Result is ['aaa', 'a a', 'aaa', '  a', '  a'].
+
+
+getScoreDigits(0, []).
+
+getScoreDigits(Score, [Result]):-
+    NewScore is Score // 10,
+    Module is Score mod 10,
+    getScoreDigits(NewScore, [NewResult]),
+    concatenate([NewResult], [Module], [Result]).
+
+
+
+
   a a a a a       a a a a a     a a         a a   a a a a a a a a
 a a a a a a a   a a a a a a a   a a a     a a a   a a a a a a a a
 a a       a a   a a       a a   a a a     a a a   a a 
