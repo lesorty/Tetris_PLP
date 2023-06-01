@@ -30,4 +30,58 @@ showGrid([H|T]) :-
     showGridLine(H), nl.
     
 
+/*
+  a a a a a       a a a a a     a a         a a   a a a a a a a a
+a a a a a a a   a a a a a a a   a a a     a a a   a a a a a a a a
+a a       a a   a a       a a   a a a     a a a   a a 
+a a             a a       a a   a a a a a a a a   a a 
+a a   a a a     a a       a a   a a a a a a a a   a a a a a a
+a a   a a a a   a a a a a a a   a a   a a   a a   a a a a a a
+a a       a a   a a a a a a a   a a   a a   a a   a a 
+a a       a a   a a       a a   a a         a a   a a
+a a       a a   a a       a a   a a         a a   a a 
+a a a a a a a   a a       a a   a a         a a   a a a a a a a a
+    a a a a     a a       a a   a a         a a   a a a a a a a a
+
+  a a a a a     a a       a a   a a a a a a a a   a a a a a a a 
+a a a a a a a   a a       a a   a a a a a a a a   a a a a a a a a
+a a       a a   a a       a a   a a               a a         a a
+a a       a a   a a       a a   a a               a a         a a
+a a       a a   a a       a a   a a a a a a       a a         a a
+a a       a a   a a       a a   a a a a a a       a a a a a a a 
+a a       a a   a a       a a   a a               a a a   a a a 
+a a       a a   a a a   a a a   a a               a a         a a
+a a       a a     a a a a a     a a               a a         a a
+a a a a a a a         a a       a a a a a a a a   a a         a a
+  a a a a a           a         a a a a a a a a   a a         a a
+*/
+
+showGameOver(Score) :-
+    write('  a a a a a       a a a a a     a a         a a   a a a a a a a a'), nl,
+    write('a a a a a a a   a a a a a a a   a a a     a a a   a a a a a a a a'), nl,
+    write('a a       a a   a a       a a   a a a     a a a   a a '), nl,
+    write('a a             a a       a a   a a a a a a a a   a a '), nl,
+    write('a a   a a a     a a       a a   a a a a a a a a   a a a a a a'), nl,
+    write('a a   a a a a   a a a a a a a   a a   a a   a a   a a a a a a'), nl,
+    write('a a       a a   a a a a a a a   a a   a a   a a   a a '), nl,
+    write('a a       a a   a a       a a   a a         a a   a a '), nl,
+    write('a a       a a   a a       a a   a a         a a   a a '), nl,
+    write('a a a a a a a   a a       a a   a a         a a   a a a a a a a a'), nl,
+    write('    a a a a     a a       a a   a a         a a   a a a a a a a a'), nl,
+    nl,
+    write('  a a a a a     a a       a a   a a a a a a a a   a a a a a a a '), nl,
+    write('a a a a a a a   a a       a a   a a a a a a a a   a a a a a a a a'), nl,
+    write('a a       a a   a a       a a   a a               a a         a a'), nl,
+    write('a a       a a   a a       a a   a a               a a         a a'), nl,
+    write('a a       a a   a a       a a   a a a a a a       a a         a a'), nl,
+    write('a a       a a   a a       a a   a a a a a a       a a a a a a a '), nl,
+    write('a a       a a   a a       a a   a a               a a a   a a a '), nl,
+    write('a a       a a   a a a   a a a   a a               a a         a a'), nl,
+    write('a a       a a     a a a a a     a a               a a         a a'), nl,
+    write('a a a a a a a         a a       a a a a a a a a   a a         a a'), nl,
+    write('  a a a a a           a         a a a a a a a a   a a         a a'), nl,
+    nl,
+    
+
+    write('Score: '), write(Score), nl.
 
