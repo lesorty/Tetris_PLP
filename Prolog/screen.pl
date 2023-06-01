@@ -22,7 +22,7 @@
 % showGameOver :: Int -> Picture
 showGridLine([]).
 showGridLine([H|T]) :-
-    print(H),
+    write(H),
     showGridLine(T).
 showGrid([]).
 showGrid([H|T]) :-
