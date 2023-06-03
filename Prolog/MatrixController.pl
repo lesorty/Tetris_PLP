@@ -241,11 +241,8 @@ padUntil25(Matrix, Matrix) :-
 % -- pega uma matriz. retorna essa matriz com as linhas clearáveis limpas
 clearMatrix(Matrix, [AddedScore | NewMatrix]) :- 
     removeFullLines(Matrix, RemovedLines),
-    write('RemovedLines'),
     padUntil25(RemovedLines, NewMatrix),
-    write('padUntil25'),
     clearableCount(Matrix, ClearedLineAmount),
-    write('clearableCount'),
     pointsForClear(ClearedLineAmount, AddedScore).
 
 % -- retorna a quantidade de linhas que podem ser limpas de uma vez
@@ -321,31 +318,18 @@ putRandomTetromino(Matrix, NewMatrix) :-
 % -- troca a peça atual por uma reserva
 % swapTetromino :: [[Square]] -> Tetromino -> [[Square]]
 swapTetromino(Matrix, Tetromino, NewMatrix) :- 
-    write('entered swapTetromino'), nl,
     getTetrominoBlocks(Tetromino, TetrominoBlocks),
-    write('got tetromino blocks'), nl,
     getTetrominoColor(Tetromino, TetrominoColor),
-    write('got tetromino color'), nl,
     findActiveMatrixIndexes(Matrix, 0, ActiveIndexes),
-    write('found active matrix indexes'), nl,
     baseDistance(ActiveIndexes, CurrentBaseDist),
-    write('got current base distance'), nl,
-    write('Tetromino: '), print(Tetromino), nl,
     [_ | TetrominoBlocks] = Tetromino,
     baseDistance(TetrominoBlocks, TetrominoBaseDist),
-    write('got tetromino base distance'), nl,
     removeActiveMatrixBlocks(Matrix, ClearedMatrix),
-    write('removed active blocks'), nl,
     subtractLists(CurrentBaseDist, TetrominoBaseDist, Shift),
-    write('got shift'), nl,
     addToAllLists(TetrominoBlocks, Shift, ShiftedBlocks),
-    write('shifted blocks'), nl,
     encloseCoords(ShiftedBlocks, EnclosedShiftedBlocks),
     raiseUntilAllowed(ClearedMatrix, EnclosedShiftedBlocks, FinalCoords),
-    write('raised until allowed'), nl,
-    updateMatrixElements(ClearedMatrix, TetrominoColor, FinalCoords, NewMatrix),
-    write('updated matrix elements'), nl.
-
+    updateMatrixElements(ClearedMatrix, TetrominoColor, FinalCoords, NewMatrix).
 
 
 % ------------ PIECE ROTATION LOGIC ------------
@@ -371,6 +355,50 @@ canBePutWithSideMove(Matrix, Coords, 'No') :-
     \+canBePut(Matrix, ShiftedRight),
     addToAllLists(Coords, [-1, 0], ShiftedLeft),
     \+canBePut(Matrix, ShiftedLeft).
+
+eraseIfPrediction(Square, NewSquare) :- 
+    Square = '#', NewSquare = '.'.
+eraseIfPrediction(Square, Square) :- 
+    Square \= '#'.
+
+removeLinePrediction([], []).
+removeLinePrediction([H|T], [NewH|NewT]) :- 
+    eraseIfPrediction(H, NewH),
+    removeLinePrediction(T, NewT).
+
+% -- retorna a matriz sem blocos ativos
+removePrediction([], []).
+removePrediction([H|T], [NewH|NewT]) :- 
+    removeLinePrediction(H, NewH),
+    removePrediction(T, NewT).
+
+removeFromListIfCoordNotEmpty(_, [], []).
+
+removeFromListIfCoordNotEmpty(Matrix, [[X, Y]|T], [[X, Y]|NewT]) :- 
+    getPos(Matrix, X,Y, Square),
+    Square == '.',
+    removeFromListIfCoordNotEmpty(Matrix, T, NewT).
+
+removeFromListIfCoordNotEmpty(Matrix, [[X,Y]|T], NewT) :-
+    getPos(Matrix, X,Y, Square),
+    Square \= '.',
+    removeFromListIfCoordNotEmpty(Matrix, T, NewT).
+
+getPredictionCoords(Matrix, Coords) :- 
+    canMoveTetromino(Matrix, 'Down'),
+    moveTetromino(Matrix, 'Down', NewMatrix),
+    getPredictionCoords(NewMatrix, Coords).
+
+getPredictionCoords(Matrix, Coords) :-
+    \+ canMoveTetromino(Matrix, 'Down'),
+    findActiveMatrixIndexes(Matrix, 0, Coords).
+
+
+updatePrediction(Matrix, NewMatrix) :-
+    removePrediction(Matrix, ClearedMatrix),
+    getPredictionCoords(Matrix, Coords),
+    removeFromListIfCoordNotEmpty(ClearedMatrix, Coords, NewCoords),
+    updateMatrixElements(ClearedMatrix, '#', NewCoords, NewMatrix).
 
 
 % -- pega uma matriz. retorna essa matriz com os blocos ativos rotacionados pra direita
