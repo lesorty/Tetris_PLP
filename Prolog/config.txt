@@ -1,1 +1,1 @@
-dificuldade=facil;
+dificuldade=facil;highscore=0;
