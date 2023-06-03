@@ -53,7 +53,7 @@ def refresh():
         if stop: break
         time.sleep(0.15)
         global autoEnter
-        if autoEnter and not writing and time.time() - lastPress > 0.15:
+        if autoEnter and not writing and time.time() - lastPress > 0.2:
             writing = True
             keyboard.write('n.') 
             keyboard.press_and_release('enter')
