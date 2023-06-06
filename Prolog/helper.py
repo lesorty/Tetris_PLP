@@ -2,6 +2,7 @@ import keyboard
 import time
 import threading
 import os
+import pygame
 
 # when any key that is not esc is pressed, write '.' and enter.
 #when esc is pressed, stop the program.
@@ -59,7 +60,27 @@ def refresh():
             keyboard.press_and_release('enter')
             writing = False
 
+def play_music(file_path):
+    pygame.mixer.init()
+    pygame.mixer.music.load(file_path)
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
+
+def music():
+    current_directory = os.getcwd()
+    current_directory.replace("helper.py", "")
+    file_path = current_directory + "\\tetris.mp3"
+    play_music(file_path)
+
+    while pygame.mixer.music.get_busy():
+        pass
+
+    pygame.mixer.music.stop()
+    pygame.mixer.quit()
+
+
 def main():
+    music()
     catchAndPrintThread = threading.Thread(target=catchAndPrint)
     refreshThread = threading.Thread(target=refresh)
     catchAndPrintThread.start()
