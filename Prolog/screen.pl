@@ -88,7 +88,11 @@ concatenateAsciiList([Digit | Rest], Result) :-
     concatenateAsciiList(Rest, RestResult),
     concatenateAscii(Digit, RestResult, Result).
 
-
+% recebe um score e retorna sua representação em ascii
+scoreToAscii(Score, Result) :-
+    digitsToList(Score, Digits),
+    listToAsciiList(Digits, AsciiDigits),
+    concatenateAsciiList(AsciiDigits, Result).
 
     
 
