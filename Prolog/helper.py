@@ -11,7 +11,7 @@ def write_dot(keyName):
     keyboard.write(keyName + '.')
     keyboard.press_and_release('enter')
 
-allowedKeys = 'wasdcvx'
+allowedKeys = 'wasdcvxjkl'
 commandKeys = ['backspace', 'enter', 'space', 'esc', 'tab', 'shift', 'ctrl', 'alt', 'caps lock', 'num lock', 'scroll lock', 'insert', 'home', 'page up', 'page down', 'end', 'right', 'left', 'down', 'up', 'print screen', 'pause', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f11', 'f12']
 
 autoEnter = False
