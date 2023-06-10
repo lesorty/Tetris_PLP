@@ -29,6 +29,7 @@ showGrid([H|T]) :-
     showGrid(T),
     showGridLine(H), nl.
 
+% feito
 % Recebe o Score e retorna a lista de digitos que o compoem
 digitsToList(0, [0]).
 digitsToList(Number, Digits) :-
@@ -41,47 +42,36 @@ digitsToListHelper(Number, Acc, Digits) :-
     Digit is Number mod 10,
     NewNumber is Number // 10,
     digitsToListHelper(NewNumber, [Digit|Acc], Digits).
-    
+
+%
 % recebe um digito e retorna seu equivalente em representaçao ascii
--a--aaa-
-aa----a-
--a--aaa-
--a--a---
-aaa-aaa-
-numberToAscii(0, [Result]):- 
-    Result is ['aaa ', 'a a ', 'a a ', 'a a ', 'aaa '].	    
-numberToAscii(1, [Result]):- 
-    Result is [' a  ', 'aa  ', ' a  ', ' a  ', 'aaa '].    
-numberToAscii(2, [Result]):- 
-    Result is ['aaa ', '  a ', 'aaa ', 'a   ', 'aaa '].
-numberToAscii(3, [Result]):- 
-    Result is ['aaa ', '  a ', 'aa ', '  a ', 'aaa '].
-numberToAscii(4, [Result]):-
-    Result is ['a a ', 'a a ', 'aaa ', '  a ', '  a '].
-numberToAscii(5, [Result]):-
-    Result is ['aaa ', 'a   ', 'aaa ', '  a ', 'aaa '].
-numberToAscii(6, [Result]):-
-    Result is ['aaa ', 'a   ', 'aaa ', 'a a ', 'aaa '].
-numberToAscii(7, [Result]):-
-    Result is ['aaa ', '  a ', '  a ', '  a ', '  a '].
-numberToAscii(8, [Result]):-
-    Result is ['aaa ', 'a a ', 'aaa ', 'a a ', 'aaa '].
-numberToAscii(9, [Result]):-
-    Result is ['aaa ', 'a a ', 'aaa ', '  a ', '  a '].
+numberToAscii(0, ['aaa  ', 'a a  ', 'a a  ', 'a a  ', 'aaa  ']).	    
+numberToAscii(1, [' a   ', 'aa   ', ' a   ', ' a   ', 'aaa  ']).    
+numberToAscii(2, ['aaa  ', '  a  ', 'aaa  ', 'a    ', 'aaa  ']).
+numberToAscii(3, ['aaa  ', '  a  ', 'aa   ', '  a  ', 'aaa  ']).
+numberToAscii(4, ['a a  ', 'a a  ', 'aaa  ', '  a  ', '  a  ']).
+numberToAscii(5, ['aaa  ', 'a    ', 'aaa  ', '  a  ', 'aaa  ']).
+numberToAscii(6, ['aaa  ', 'a    ', 'aaa  ', 'a a  ', 'aaa  ']).
+numberToAscii(7, ['aaa  ', '  a  ', '  a  ', '  a  ', '  a  ']).
+numberToAscii(8, ['aaa  ', 'a a  ', 'aaa  ', 'a a  ', 'aaa  ']).
+numberToAscii(9, ['aaa  ', 'a a  ', 'aaa  ', '  a  ', '  a  ']).
 
 
+% feito
 % recebe uma lista de digitos e retorna uma lista de strings com a representacao ascii de cada digito
 listToAsciiList([], []).
 listToAsciiList([H|T], [NewResult | Result]):-
     numberToAscii(H, NewResult),
     listToAsciiList(T, Result).
 
+% feito
 % recebe uma lista de strings e retorna uma lista de strings com a representacao ascii de cada digito
 concatenateAscii([], [], []).
 concatenateAscii([H1|T1], [H2|T2], [Concatenated|Result]) :-
     concatenateAscii(T1, T2, Result),
     string_concat(H1, H2, Concatenated).
 
+% TODO
 % recebe uma lista de digitos em ascii e retorna uma unica representação deles
 concatenateAsciiList([], []).
 concatenateAsciiList([Digit | Rest], Result) :-
@@ -90,38 +80,20 @@ concatenateAsciiList([Digit | Rest], Result) :-
 
 % recebe um score e retorna sua representação em ascii
 scoreToAscii(Score, Result) :-
+    % feito
     digitsToList(Score, Digits),
+    % feito
     listToAsciiList(Digits, AsciiDigits),
+
     concatenateAsciiList(AsciiDigits, Result).
 
+% feito
+% recebe uma lista de strings e imprime na tela
+printAscii([]).
+printAscii([H|T]) :-
+    write(H), nl,
+    printAscii(T).
     
-
-
-
-  a a a a a       a a a a a     a a         a a   a a a a a a a a
-a a a a a a a   a a a a a a a   a a a     a a a   a a a a a a a a
-a a       a a   a a       a a   a a a     a a a   a a 
-a a             a a       a a   a a a a a a a a   a a 
-a a   a a a     a a       a a   a a a a a a a a   a a a a a a
-a a   a a a a   a a a a a a a   a a   a a   a a   a a a a a a
-a a       a a   a a a a a a a   a a   a a   a a   a a 
-a a       a a   a a       a a   a a         a a   a a
-a a       a a   a a       a a   a a         a a   a a 
-a a a a a a a   a a       a a   a a         a a   a a a a a a a a
-    a a a a     a a       a a   a a         a a   a a a a a a a a
-
-  a a a a a     a a       a a   a a a a a a a a   a a a a a a a 
-a a a a a a a   a a       a a   a a a a a a a a   a a a a a a a a
-a a       a a   a a       a a   a a               a a         a a
-a a       a a   a a       a a   a a               a a         a a
-a a       a a   a a       a a   a a a a a a       a a         a a
-a a       a a   a a       a a   a a a a a a       a a a a a a a 
-a a       a a   a a       a a   a a               a a a   a a a 
-a a       a a   a a a   a a a   a a               a a         a a
-a a       a a     a a a a a     a a               a a         a a
-a a a a a a a         a a       a a a a a a a a   a a         a a
-  a a a a a           a         a a a a a a a a   a a         a a
-*/
 
 showGameOver(Score) :-
     write('  a a a a a       a a a a a     a a         a a   a a a a a a a a'), nl,
