@@ -78,9 +78,10 @@ concatenateAscii([H1|T1], [H2|T2], [Concatenated|Result]) :-
 % TODO
 % recebe uma lista de digitos em ascii e retorna uma unica representação deles
 concatenateAsciiList([], []).
-concatenateAsciiList([Digit | Rest], Result) :-
-    concatenateAsciiList(Rest, RestResult),
-    concatenateAscii(Digit, RestResult, Result).
+concatenateAsciiList([Digit|Digits], Result) :-
+    concatenateAsciiList(Digits, Rest),
+    concatenateAscii(Digit, Rest, Result).
+
 
 % recebe um score e retorna sua representação em ascii
 scoreToAscii(Score, Result) :-
