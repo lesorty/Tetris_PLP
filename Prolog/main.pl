@@ -3,7 +3,8 @@
 % mostra o menu inicial do jogo
 main :-
     show_menu(0),
-    read(Input),
+    read_line_to_codes(user_input, InputCodes),
+    string_to_atom(InputCodes, Input),
     selecao(Input, 0).
 
 % mostra o menu quando a dificuldade está selecionada
@@ -30,7 +31,7 @@ show_menu(1) :-
 %pega input e muda o menu
 novo_input(Num) :-
     show_menu(Num),
-    read(Input),
+    readInput(Input),
     selecao(Input, Num).
 
 %seleciona a opção do menu
@@ -60,6 +61,9 @@ selecao('d', 1) :-
 selecao('a', 1) :-
     changeVolume('esquerda'),
     novo_input(1),!.
+
+selecao('x', _) :-
+    halt.
 
 selecao(_, Num) :-
     novo_input(Num).
