@@ -1,1 +1,1 @@
-highscore=0;volume=1;dificuldade=medio;
+highscore=1850;dificuldade=dificil;volume=1;

@@ -1,108 +1,129 @@
-%change_directory('D:/Program Files (x86)/Tetris_PLP/Prolog').
+:- include('GameController.pl').
 
-% -- define os valores do jogo
-% data GameState = GameState {
-%     matrix :: [[Square]],
-%     score :: Int,
-%     droppedPieces :: Int,
-%     pieceSwap :: Tetromino,
-%     }
-
-% -- define as condições iniciais
-% newGameState :: GameState
-:- include('Screen.pl').
-:- include('ConfigHandler.pl').
-:- include('MoveAppliers.pl').
-
-newGameState(GameState) :-
-    emptyMatrix(Matrix),
-    getRandomTetromino(SwapTetromino),
-    putRandomTetromino(Matrix, NewMatrix),
-    get_time(Now),
-    PredictionlessGameState = [NewMatrix, 0, 0, Now, SwapTetromino],
-    applyMove(PredictionlessGameState, 'UpdatePrediction', GameState).
-
-% -- aplica um movimento numa matriz
-% applyMove :: GameState -> Move -> GameState
-
-autoFall(Gamestate, TimeSinceLastMove, NewGameState) :-
-    get_time(Now),
-    DeltaTime is Now - TimeSinceLastMove,
-    [_, _, DroppedPieces, _, _] = Gamestate,
-    droppedPiecesToDelay(DroppedPieces, Delay),
-    AutoFallCount is floor(DeltaTime / Delay),
-    applyDownNTimes(Gamestate, AutoFallCount, GameStatePostAuto),
-    [Matrix, Score, PostDroppedPieces, _, PieceSwap] = GameStatePostAuto,
-    NewLastDropTime is Now - DeltaTime + (AutoFallCount * Delay),
-    NewGameState = [Matrix, Score, PostDroppedPieces, NewLastDropTime, PieceSwap],
-    !.
-
-%% pega o estado que o jogo ficará após o input
-nextBoardState(GameState, Input, NewGameState) :-
-    toLower(Input, InputLower),
-    inputToMove(InputLower, Move),
-    [_, _, _, LastDropTime, _] = GameState,	
-    autoFall(GameState, LastDropTime, AutoFallAppliedGameState),
-    applyMove(AutoFallAppliedGameState, Move, PredictionlessGameState),
-    applyMove(PredictionlessGameState, 'UpdatePrediction', NewGameState).    
-
-% -- loop do jogo. descida autómatica das peças
-% progressTime :: Float -> GameState -> GameState 
-
-% -- define as pontuações de acordo com a quantidade de linhas limpas de uma só vez
-% pointsForClear :: Int -> Int
-pointsForClear(1, 100).
-pointsForClear(2, 250).
-pointsForClear(3, 500).
-pointsForClear(4, 1000).
-pointsForClear(_, 0).
-
-%-- define as teclas para jogar
-%inputToMove :: Event -> Move
-inputToMove('a', 'Left') :- !.
-inputToMove('d', 'Right') :- !.
-inputToMove('s', 'Down'):- !.
-inputToMove('w', 'Rotate'):- !.
-inputToMove('c', 'Swap'):- !.
-inputToMove('v', 'FullFall'):- !.
-inputToMove(_, 'Invalid').
-
-droppedPiecesToDelay(DroppedPieces, Delay) :-
-    getConfig('dificuldade', 'facil'),
-    (DroppedPieces > 40 -> Delay = 0.6; Delay is 1 - (DroppedPieces / 100)).
-
-droppedPiecesToDelay(DroppedPieces, Delay) :-
-    getConfig('dificuldade', 'medio'),
-    (DroppedPieces > 40 -> Delay = 0.4; Delay is 1 - (DroppedPieces / 66)).
-
-droppedPiecesToDelay(DroppedPieces, Delay) :-
-    getConfig('dificuldade', 'dificil'),
-    (DroppedPieces > 40 -> Delay = 0.2; Delay is 1 - (DroppedPieces / 50)).
-
+% mostra o menu inicial do jogo
 main :-
-    print('starting game'), nl,
-    newGameState(GameState),
-    [Matrix, _, _, _, _] = GameState,
-    showGrid(Matrix),
-    gameLoop(GameState).
-
-gameLoop(GameState) :-
+    show_menu(0),
     read(Input),
-    (Input == 'x' -> 
-        print('exiting'), !
-        ;
-        nextBoardState(GameState, Input, NewGameState),
-        [Matrix, Score, _, _, _] = NewGameState,
-        (isGameOver(Matrix) -> 
-            print('game over'), nl, 
-            write('highscore is '), getConfig('highscore', HighscoreStr), atom_number(HighscoreStr, Highscore), write(Highscore), nl,
-            write('score is '), write(Score), nl,
-            (Score > Highscore -> 
-                write('new highscore!'), nl, 
-                setConfig('highscore', Score), !
-                ;
-                true, !
-            ), !
-            ;
-            write('score is '), write(Score), nl, 
-            showGrid(Matrix), gameLoop(NewGameState))).
+    selecao(Input, 0).
+
+% mostra o menu quando a dificuldade está selecionada
+show_menu(0) :-
+    ajustaCima,
+    write('=== Game Menu ==='), nl,
+    
+    write('>>> '), showConfig('dificuldade'),
+    showConfig('volume'), nl,
+    write('Pressione "p" para jogar'), nl,
+    write('Pressione "x" para sair'), nl,
+    ajustaBaixo.
+
+% mostra o menu quando o volume está selecionado
+show_menu(1) :-
+    ajustaCima,
+    write('=== Game Menu ==='), nl,
+    showConfig('dificuldade'),
+    write('>>> '), showConfig('volume'), nl,
+    write('Pressione "p" para jogar'), nl,
+    write('Pressione "x" para sair'), nl,
+    ajustaBaixo.
+
+%pega input e muda o menu
+novo_input(Num) :-
+    show_menu(Num),
+    read(Input),
+    selecao(Input, Num).
+
+%seleciona a opção do menu
+selecao('p', _) :-
+    startGame.
+
+selecao('s', Num) :-
+    NumTemp is 1 - Num,
+    novo_input(NumTemp),!.
+
+selecao('w', Num) :-
+    NumTemp is 1 - Num,
+    novo_input(NumTemp),!.
+
+selecao('d', 0) :-
+    changeDiff('direita'),
+    novo_input(0),!.
+
+selecao('a', 0) :-
+    changeDiff('esquerda'),
+    novo_input(0),!.
+
+selecao('d', 1) :-
+    changeVolume('direita'),
+    novo_input(1),!.
+
+selecao('a', 1) :-
+    changeVolume('esquerda'),
+    novo_input(1),!.
+
+selecao(_, Num) :-
+    novo_input(Num).
+
+%converte o numero do volume para a barra visual de volume
+converteNumVolumeBar("0", '[     ]').
+converteNumVolumeBar("1", '[=    ]').
+converteNumVolumeBar("2", '[==   ]').
+converteNumVolumeBar("3", '[===  ]').
+converteNumVolumeBar("4", '[==== ]').
+converteNumVolumeBar("5", '[=====]').
+
+%modifica o volume
+changeVolume('direita') :-
+    getConfig('volume', Value),
+    ValueTemp is (Value + 1) mod 6,
+    setConfig('volume', ValueTemp).
+
+changeVolume('esquerda') :-
+    getConfig('volume', Value),
+    ValueTemp is (Value - 1) mod 6,
+    setConfig('volume', ValueTemp).
+
+%converte o index da dificuldade para o nome da dificuldade
+indexToDiff(0, "facil").
+indexToDiff(1, "medio").
+indexToDiff(2, "dificil").
+
+%modifica a dificuldade
+changeDiff('direita') :-
+    getConfig('dificuldade', Value),
+    indexToDiff(Index, Value),
+    IndexTemp is (Index + 1) mod 3,
+    indexToDiff(IndexTemp, ValueTemp),
+    setConfig('dificuldade', ValueTemp).
+
+changeDiff('esquerda') :-
+    getConfig('dificuldade', Value),
+    indexToDiff(Index, Value),
+    IndexTemp is (Index - 1) mod 3,
+    indexToDiff(IndexTemp, ValueTemp),
+    setConfig('dificuldade', ValueTemp).
+
+%mostra a configuração atual
+showConfig('volume') :-
+    getConfig('volume', Value),
+    converteNumVolumeBar(Value, Bar),
+    write('Volume >'), write(Bar), write('<'), nl.
+
+showConfig('dificuldade') :-
+    getConfig('dificuldade', 'facil'),
+    write('Dificuldade [Facil] Medio Dificil'), nl.
+
+showConfig('dificuldade') :-
+    getConfig('dificuldade', 'medio'),
+    write('Dificuldade Facil [Medio] Dificil'), nl.
+
+showConfig('dificuldade') :-
+    getConfig('dificuldade', 'dificil'),
+    write('Dificuldade Facil Medio [Dificil]'), nl.
+
+
+ajustaCima :-
+nl,nl,nl,nl,nl,nl,nl,nl.
+
+ajustaBaixo :-
+nl,nl,nl,nl,nl,nl,nl,nl,nl.
