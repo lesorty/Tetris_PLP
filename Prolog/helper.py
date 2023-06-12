@@ -6,14 +6,7 @@ import pygame
 
 # when any key that is not esc is pressed, write '.' and enter.
 #when esc is pressed, stop the program.
-def write_dot(keyName):
-    global writing 
-    writing = True
-    for _ in range(0, 3):
-        keyboard.press_and_release('backspace')
-    keyboard.write(keyName + '.')
-    keyboard.press_and_release('enter')
-    writing = False
+
 
 def getVolume():
     configFile = open('config.txt', 'r')
@@ -31,56 +24,41 @@ commandKeys = ['backspace', 'enter', 'space', 'esc', 'tab', 'shift', 'ctrl', 'al
 
 autoEnter = False
 stop = False
-writing = False
+musicPlaying = False
 lastPress = time.time()
 
 def catchAndPrint():
     while True:
-        global stop, writing, lastPress
+        global stop, lastPress, musicPlaying
         event = keyboard.read_event()
         if event.name == 'esc' or event.name == 'x':
             stop = True
-            write_dot('x')
+            pygame.mixer.music.stop()
             break
         if event.event_type == 'up': continue
-        if writing: 
-            keyboard.press_and_release('backspace')
-            continue
         if event.name == 'p':
             global autoEnter
             autoEnter = not autoEnter
-            write_dot('p')
-            if (autoEnter):
+            if not musicPlaying:
                 threading.Thread(target=music).start()
-                
+                musicPlaying = True
         elif event.name in allowedKeys:
-            writing = True
             lastPress = time.time()
-            write_dot(event.name)
-            writing = False
+            keyboard.press_and_release('enter')
         elif event.name == 'm':
             keyboard.write('ain.')
             keyboard.press_and_release('enter')
-        elif event.name not in commandKeys:
-            keyboard.press_and_release('backspace')
+
     
 def refresh():
     while True:
-        global stop, writing
+        global stop
         if stop: break
         time.sleep(0.15)
         global autoEnter
-        if autoEnter and not writing and time.time() - lastPress > 0.5:
-            step = 0
-            while step < 3:
-                if writing: break
-                if step == 0:
-                    keyboard.write('n')
-                elif step == 1:
-                    keyboard.write('.')
-                elif step == 2:
-                    keyboard.press_and_release('enter')
-                step += 1
+        if autoEnter and time.time() - lastPress > 0.3:
+            keyboard.press_and_release('enter')
+            
 
 def main():
     catchAndPrintThread = threading.Thread(target=catchAndPrint)

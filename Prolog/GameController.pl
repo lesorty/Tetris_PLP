@@ -85,7 +85,7 @@ startGame :-
 
 % loop do jogo
 gameLoop(GameState) :-
-    read(Input),
+    readInput(Input),
     (Input == 'x' -> 
         !
         ;

@@ -188,7 +188,7 @@ showGameOver(Score, HighScore) :-
     printAscii(NewVisualScore),
     write('APERTE "x" PARA SAIR DO JOGO'), nl,
     nl,nl,nl,nl,nl,nl,nl,nl,nl,
-    read(Option),
+    readInput(Option),
     (Option = 'x' -> halt; showGameOver(Score, HighScore)).
 
 % bota espacos no comeco de uma string ate que ela tenha um tamanho especifico
@@ -205,3 +205,9 @@ emptyRectangle(Height, Width, [H|T]) :-
     NewHeight is Height - 1,
     emptyRectangle(NewHeight, Width, T),
     repeatString(' ', Width, H).
+
+readInput(Input) :-
+    read_line_to_codes(user_input, InputCodes),
+    string_to_atom(InputCodes, UncheckedInput),
+    (atom_length(UncheckedInput, 1) -> Input = UncheckedInput; Input = 'n').
+
